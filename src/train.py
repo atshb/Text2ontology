@@ -37,8 +37,11 @@ for epoch in range(max_epoch):
     # Training
     epoch_loss = 0
     model.train()
-    for i, (x_a, x_b, t) in enumerate(train_loader):
-        y = model(x_a, x_b)
+    for i, (a, b, t) in enumerate(train_loader):
+        a,= a.to(device)
+        b = b.to(device)
+        t   = t.to(device)
+        y = model(a, b)
         loss = loss_func(y, t)
         epoch_loss += loss.cpu().item()
         #
@@ -50,8 +53,11 @@ for epoch in range(max_epoch):
     # Validation
     epoch_accu = 0
     model.eval()
-    for x_a, x_b, y in valid_loader:
-        y = model(x_a, x_b)
+    for a, b, t in valid_loader:
+        a = a.to(device)
+        b = b.to(device)
+        t = t.to(device)
+        y = model(a, b)
         _, y = torch.max(y.data, 1)
         epoch_accu += sum(1 for y_i, t_i in zip(y, t) if y_i == t_i)
 

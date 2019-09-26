@@ -6,15 +6,17 @@ from nltk.corpus import wordnet as wn
 # 出力結果が毎回同じになるようにがseed値は固定
 random.seed(1000)
 
-
 # Parameters
 max_seq_len = 3
 n_unrelated = 500000
 train_rate = 0.8
 
+# ファイル関連
 dir = '../data/wordnet/'
+fname_vocab = dir + 'vocabulary.pkl'
 fname_train = dir + 'train.pkl'
 fname_valid = dir + 'valid.pkl'
+
 
 
 # Wordnetからのデータの抽出
@@ -22,13 +24,14 @@ fname_valid = dir + 'valid.pkl'
 ## 全lemmaをから単語数がmax_seq_len以下のものだけ取り出す
 lemmas = wn.all_lemma_names(pos='n')
 lemma_set = set(l for l in lemmas if len(l.split('_')) <= max_seq_len)
+pd.to_pickle(lemma_set, fname_vocab)
 
 ## 同義語のペアの追加
 synonyms = []
 for s in wn.all_synsets(pos='n'):
     for a in s.lemma_names():
         for b in s.lemma_names():
-            if a in lemma_set and b in lemma_set:
+            if a in lemma_set and b in lemma_set and a != b:
                 synonyms.append((a, b))
 
 ## 上位下位、下位上位のペアの追加
@@ -77,5 +80,6 @@ pd.to_pickle(valid_dataset, fname_valid)
 # columns = ('Lemma A', 'Lemma B', 'Label')
 # pd.DataFrame(train_dataset, columns=columns).to_csv(fname_train + '.csv', index=None)
 # pd.DataFrame(valid_dataset, columns=columns).to_csv(fname_valid + '.csv', index=None)
+print('num of vocab :', len(lemma_set))
 print('num of train data :', n_train)
 print('num of valid data :', n_valid)

@@ -16,4 +16,4 @@ stop_words = nltk.corpus.stopwords.words('english')
 
 wordcloud = WordCloud(min_font_size=5, collocations=False, background_color='black',
                       width=900, height=500,stopwords=set(stop_words),max_words=100)
-wordcloud.generate(text).to_file("./wordcloud_sample.png")
+wordcloud.generate(text).to_file("../result/wordcloud/sample.png")

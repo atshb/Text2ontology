@@ -38,7 +38,7 @@ for epoch in range(max_epoch):
     epoch_loss = 0
     model.train()
     for i, (a, b, t) in enumerate(train_loader):
-        a,= a.to(device)
+        a = a.to(device)
         b = b.to(device)
         t   = t.to(device)
         y = model(a, b)

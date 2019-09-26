@@ -54,8 +54,7 @@ class Word2vec_Embedding():
 
 class RNN_ONT(nn.Module):
 
-    def __init__(self, embed, x_size=300, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
-        self.embed = embed
+    def __init__(self, x_size=300, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         self.h_size = h_size
         self.num_cell = 2 # 1のときは修正が必要
 
@@ -74,10 +73,8 @@ class RNN_ONT(nn.Module):
         )
 
     def forward(self, x_a, x_b):
-        v_a = self.embed(x_a)
-        v_b = self.embed(x_b)
-        _, (h_a, _) = self.lstm_a(v_a)
-        _, (h_b, _) = self.lstm_b(v_b)
+        _, (h_a, _) = self.lstm_a(x_a)
+        _, (h_b, _) = self.lstm_b(x_b)
         h = self.concat(h_a, h_b)
         y = self.classifier(h)
         return y

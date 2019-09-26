@@ -27,7 +27,7 @@ valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 embed = Word2vec_Embedding()
-model = RNN_ONT(embed).to(device)
+model = RNN_ONT().to(device)
 
 loss_func = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters())
@@ -37,26 +37,36 @@ for epoch in range(max_epoch):
     # Training
     epoch_loss = 0
     model.train()
-    for i, (a, b, t) in enumerate(train_loader):
-        a = a.to(device)
-        b = b.to(device)
-        t   = t.to(device)
-        y = model(a, b)
+    for i, (x_a, x_b, t) in enumerate(train_loader):
+        #
+        e_a = embed(x_a)
+        e_b = embed(x_b)
+        #
+        e_a = e_a.to(device)
+        e_b = e_b.to(device)
+        t = t.to(device)
+        #
+        y = model(e_a, e_b)
         loss = loss_func(y, t)
         epoch_loss += loss.cpu().item()
         #
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if (i + 1) % 10 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
+        # if i % 10 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
 
     # Validation
     epoch_accu = 0
     model.eval()
     for a, b, t in valid_loader:
-        a = a.to(device)
-        b = b.to(device)
+        #
+        e_a = embed(x_a)
+        e_b = embed(x_b)
+        #
+        e_a = e_a.to(device)
+        e_b = e_b.to(device)
         t = t.to(device)
+        #
         y = model(a, b)
         _, y = torch.max(y.data, 1)
         epoch_accu += sum(1 for y_i, t_i in zip(y, t) if y_i == t_i)

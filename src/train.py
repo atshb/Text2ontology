@@ -17,8 +17,8 @@ max_epoch  = 50
 batch_size = 128
 
 # Loading
-train = pd.read_pickle('../data/wordnet/train.pkl')[:8192]
-valid = pd.read_pickle('../data/wordnet/valid.pkl')[:1024]
+train = pd.read_pickle('../data/wordnet/train.pkl')
+valid = pd.read_pickle('../data/wordnet/valid.pkl')
 
 train_loader = data.DataLoader(Ont_Dataset(train), batch_size, shuffle=False)
 valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
@@ -26,7 +26,8 @@ valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
 #
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-embed = Word2vec_Embedding()
+# embed = Word2vec_Embedding()
+embed = XLNet_Embedding()
 model = RNN_ONT().to(device)
 
 loss_func = nn.CrossEntropyLoss()
@@ -54,6 +55,7 @@ for epoch in range(max_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        print('ok')
         # if i % 10 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
 
     # Validation
@@ -76,6 +78,3 @@ for epoch in range(max_epoch):
     epoch_loss /= len(train)
     epoch_accu /= len(valid)
     print(f'{epoch:0>2} | loss : {epoch_loss:>7.5f} | accu : {epoch_accu:.2%}')
-
-
-if __name__ == '__main__': main()

@@ -10,8 +10,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data as data
 
-from pytorch_pretrained_bert import BertTokenizer, BertModel
-
+from transformers import BertModel, BertTokenizer, XLNetModel, XLNetTokenizer
 
 '''
 Wordnet_Dataset
@@ -67,9 +66,7 @@ class BERT_Embedding():
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
 
     def __call__(self, batch):
-        print(batch)
         batch = [['[CLS]'] + l.split('_') + ['[SEP]'] for l in batch]
-        print(batch)
         batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
 
         seq_len = max(len(l) for l in batch)
@@ -85,6 +82,33 @@ class BERT_Embedding():
 
         return feature[-1]
 
+
+'''
+'''
+class XLNet_Embedding():
+
+    def __init__(self, device='cpu'):
+        self.device = device
+        self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+        self.bert = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(device)
+        # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
+
+    def __call__(self, batch):
+        batch = [['[CLS]'] + l.split('_') + ['[SEP]'] for l in batch]
+        batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
+
+        seq_len = max(len(l) for l in batch)
+
+        batch = [self.tokenizer.convert_tokens_to_ids(l) + [0] * (seq_len - len(l)) for l in batch]
+        masks = [[1] * len(l)                            + [0] * (seq_len - len(l)) for l in batch]
+
+        batch = torch.tensor(batch).to(self.device)
+        masks = torch.tensor(masks).to(self.device)
+
+        feature, _ = self.bert(batch, None, masks)
+        feature = feature[-1]
+
+        return feature[-1]
 
 
 '''
@@ -124,7 +148,6 @@ class RNN_ONT(nn.Module):
         a = torch.cat([e for e in a], dim=1)
         b = torch.cat([e for e in b], dim=1)
         return torch.cat((a, b), dim=1)
-
 
 
 def main():

@@ -40,9 +40,6 @@ def create_vectorizer(terms, device='cpu'):
 
 
 
-
-
-
 #
 def main():
     with open('../../dataset/wordnet_full.pickle', 'rb') as f: dataset = pickle.load(f)

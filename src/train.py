@@ -14,7 +14,7 @@ from model import *
 
 # param
 max_epoch  = 50
-batch_size = 128
+batch_size = 32
 
 # Loading
 train = pd.read_pickle('../data/wordnet/train.pkl')
@@ -27,8 +27,9 @@ valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # embed = Word2vec_Embedding()
-embed = XLNet_Embedding()
-model = RNN_ONT().to(device)
+# embed = BERT_Embedding(device)
+embed = XLNet_Embedding(device)
+model = RNN_ONT(x_size=768).to(device)
 
 loss_func = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters())
@@ -55,8 +56,7 @@ for epoch in range(max_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        print('ok')
-        # if i % 10 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
+        if (i + 1) % 1000 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
 
     # Validation
     model.eval()

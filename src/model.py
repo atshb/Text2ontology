@@ -50,7 +50,7 @@ class Word2vec_Embedding():
 
     def vectorize_lemma(self, lemma):
         words = lemma.split('_')
-        vecs =  [self.w2v(w) if w in self.w2v else self.pad_vec for w in words]
+        vecs =  [self.w2v[w] if w in self.w2v else self.pad_vec for w in words]
         vecs += [self.pad_vec] * (self.seq_len - len(words))
         return np.stack(vecs)
 
@@ -90,7 +90,7 @@ class XLNet_Embedding():
     def __init__(self, device='cpu'):
         self.device = device
         self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
-        self.bert = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(device)
+        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(device)
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
 
     def __call__(self, batch):
@@ -105,10 +105,8 @@ class XLNet_Embedding():
         batch = torch.tensor(batch).to(self.device)
         masks = torch.tensor(masks).to(self.device)
 
-        feature, _ = self.bert(batch, None, masks)
-        feature = feature[-1]
-
-        return feature[-1]
+        feature, _ = self.model(batch, None, masks)
+        return feature
 
 
 '''
@@ -151,7 +149,7 @@ class RNN_ONT(nn.Module):
 
 
 def main():
-    batch_size = 4
+    batch_size = 64
 
     train = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
     # valid = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
@@ -160,9 +158,7 @@ def main():
     # valid_loader = data.DataLoader(valid, batch_size=batch_size, shuffle=False)
 
     # embed = Word2vec_Embedding()
-    embed = BERT_Embedding()
-
-    concat = RNN_ONT()
+    embed = XLNet_Embedding('cuda')
 
     for a, b, l in train_loader:
         a = embed(a)

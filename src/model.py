@@ -10,6 +10,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data as data
 
+from pytorch_pretrained_bert import BertTokenizer, BertModel
+
 
 '''
 Wordnet_Dataset
@@ -28,6 +30,11 @@ class Ont_Dataset(data.Dataset):
         return self.data[idx]
 
 
+'''
+Word2vec_Embedding
+    lemma(複合語)をベクトル(seq_len, 300)に変換するクラス。
+    seq_lenは最も単語数の多い複合語。足りない場合は0ベクトルでパディング。
+'''
 class Word2vec_Embedding():
 
     def __init__(self):
@@ -43,15 +50,45 @@ class Word2vec_Embedding():
         return batch
 
     def vectorize_lemma(self, lemma):
-        lemma = [self.vectorize_word(w) for w in lemma.split('_')]
-        lemma += [self.pad_vec] * (self.seq_len - len(lemma))
-        return np.stack(lemma)
-
-    def vectorize_word(self, word):
-        if word in self.w2v: return self.w2v[word]
-        else               : return self.pad_vec
+        words = lemma.split('_')
+        vecs =  [self.w2v(w) if w in self.w2v else self.pad_vec for w in words]
+        vecs += [self.pad_vec] * (self.seq_len - len(words))
+        return np.stack(vecs)
 
 
+'''
+'''
+class BERT_Embedding():
+
+    def __init__(self, device='cpu'):
+        self.device = device
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('bert-base-uncased').eval().to(device)
+        # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
+
+    def __call__(self, batch):
+        print(batch)
+        batch = [['[CLS]'] + l.split('_') + ['[SEP]'] for l in batch]
+        print(batch)
+        batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
+
+        seq_len = max(len(l) for l in batch)
+
+        batch = [self.tokenizer.convert_tokens_to_ids(l) + [0] * (seq_len - len(l)) for l in batch]
+        masks = [[1] * len(l)                            + [0] * (seq_len - len(l)) for l in batch]
+
+        batch = torch.tensor(batch).to(self.device)
+        masks = torch.tensor(masks).to(self.device)
+
+        feature, _ = self.bert(batch, None, masks)
+        feature = feature[-1]
+
+        return feature[-1]
+
+
+
+'''
+'''
 class RNN_ONT(nn.Module):
 
     def __init__(self, x_size=300, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
@@ -67,9 +104,9 @@ class RNN_ONT(nn.Module):
         # MLP
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
-            nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
-            nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
-            nn.Linear(4*h_size,   y_size)
+            nn.Linear(4*h_size, 4*h_size), nn.BatchNorm1d(4*h_size), nn.ReLU(), nn.Dropout(),
+            nn.Linear(4*h_size, 4*h_size), nn.BatchNorm1d(4*h_size), nn.ReLU(), nn.Dropout(),
+            nn.Linear(4*h_size,   y_size),
         )
 
     def forward(self, x_a, x_b):
@@ -94,23 +131,19 @@ def main():
     batch_size = 4
 
     train = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
-    valid = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
+    # valid = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
 
     train_loader = data.DataLoader(train, batch_size=batch_size, shuffle=False)
-    valid_loader = data.DataLoader(valid, batch_size=batch_size, shuffle=False)
+    # valid_loader = data.DataLoader(valid, batch_size=batch_size, shuffle=False)
 
-    embed = Word2vec_Embedding()
+    # embed = Word2vec_Embedding()
+    embed = BERT_Embedding()
 
     concat = RNN_ONT()
 
     for a, b, l in train_loader:
-        a, b = embed(a), embed(b)
-
-        print(a.size(), b.size(), l.size())
-
-        h = concat(a, b)
-
-        print(h.size())
+        a = embed(a)
+        print(a.size())
 
         break
 

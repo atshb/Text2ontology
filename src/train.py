@@ -26,9 +26,9 @@ valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
 #
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# embed = Word2vec_Embedding()
-# embed = BERT_Embedding(device)
-embed = XLNet_Embedding(device)
+# embed = Word2vec_Embedding().to(device)
+# embed = BERT_Embedding().to(device)
+embed = XLNet_Embedding().to(device)
 model = RNN_ONT(x_size=768).to(device)
 
 loss_func = nn.CrossEntropyLoss()
@@ -44,9 +44,6 @@ for epoch in range(max_epoch):
         #
         e_a = embed(x_a)
         e_b = embed(x_b)
-        #
-        e_a = e_a.to(device)
-        e_b = e_b.to(device)
         t = t.to(device)
         # calculate loss
         y = model(e_a, e_b)
@@ -65,9 +62,6 @@ for epoch in range(max_epoch):
         #
         e_a = embed(x_a)
         e_b = embed(x_b)
-        #
-        e_a = e_a.to(device)
-        e_b = e_b.to(device)
         t = t.to(device)
         # calculate accuracy
         y = model(e_a, e_b)

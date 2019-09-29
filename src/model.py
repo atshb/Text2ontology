@@ -95,7 +95,7 @@ class XLNet_Embedding():
 
     def __init__(self):
         self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
-        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval()
+        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(device)
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
 
     def __call__(self, batch):

@@ -72,3 +72,6 @@ for epoch in range(max_epoch):
     epoch_loss /= len(train)
     epoch_accu /= len(valid)
     print(f'{epoch:0>2} | loss : {epoch_loss:>7.5f} | accu : {epoch_accu:.2%}')
+
+    # Save Model
+    torch.save(model.state_dict(), f'../result/bert-rnn/{epoch+1:0>2}.pkl')

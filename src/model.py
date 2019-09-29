@@ -35,6 +35,7 @@ Word2vec_Embedding
     seq_lenは最も単語数の多い複合語。足りない場合は0ベクトルでパディング。
 '''
 class Word2vec_Embedding():
+    device = 'cpu'
 
     def __init__(self):
         self.w2v   = pd.read_pickle('../data/word2vec/word2vec.pkl')
@@ -45,8 +46,8 @@ class Word2vec_Embedding():
 
     def __call__(self, batch):
         batch = np.stack([self.vectorize_lemma(l) for l in batch])
-        batch = torch.from_numpy(batch).float()
-        return batch
+        batch = torch.from_numpy(batch)
+        return batch.float().to(device)
 
     def vectorize_lemma(self, lemma):
         words = lemma.split('_')
@@ -54,13 +55,16 @@ class Word2vec_Embedding():
         vecs += [self.pad_vec] * (self.seq_len - len(words))
         return np.stack(vecs)
 
+    def to(self, device):
+        self.device = device
+
 
 '''
 '''
 class BERT_Embedding():
+    device = 'cpu'
 
-    def __init__(self, device='cpu'):
-        self.device = device
+    def __init__(self):
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert = BertModel.from_pretrained('bert-base-uncased').eval().to(device)
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
@@ -78,19 +82,20 @@ class BERT_Embedding():
         masks = torch.tensor(masks).to(self.device)
 
         feature, _ = self.bert(batch, None, masks)
-        feature = feature[-1]
+        return feature
 
-        return feature[-1]
-
+    def to(self, device):
+        self.device = device
+        self.model.to(device)
 
 '''
 '''
 class XLNet_Embedding():
+    device = 'cpu'
 
-    def __init__(self, device='cpu'):
-        self.device = device
+    def __init__(self):
         self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
-        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(device)
+        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval()
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
 
     def __call__(self, batch):
@@ -107,6 +112,10 @@ class XLNet_Embedding():
 
         feature, _ = self.model(batch, None, masks)
         return feature
+
+    def to(self, device):
+        self.device = device
+        self.model.to(device)
 
 
 '''
@@ -126,8 +135,8 @@ class RNN_ONT(nn.Module):
         # MLP
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
-            nn.Linear(4*h_size, 4*h_size), nn.BatchNorm1d(4*h_size), nn.ReLU(), nn.Dropout(),
-            nn.Linear(4*h_size, 4*h_size), nn.BatchNorm1d(4*h_size), nn.ReLU(), nn.Dropout(),
+            nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
+            nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
             nn.Linear(4*h_size,   y_size),
         )
 

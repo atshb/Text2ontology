@@ -27,8 +27,8 @@ valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # embed = Word2vec_Embedding().to(device)
-# embed = BERT_Embedding().to(device)
-embed = XLNet_Embedding().to(device)
+embed = BERT_Embedding().to(device)
+# embed = XLNet_Embedding().to(device)
 model = RNN_ONT(x_size=768).to(device)
 
 loss_func = nn.CrossEntropyLoss()

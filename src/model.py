@@ -46,8 +46,8 @@ class Word2vec_Embedding():
 
     def __call__(self, batch):
         batch = np.stack([self.vectorize_lemma(l) for l in batch])
-        batch = torch.from_numpy(batch)
-        return batch.float().to(device)
+        batch = torch.from_numpy(batch).float().to(self.device)
+        return batch
 
     def vectorize_lemma(self, lemma):
         words = lemma.split('_')
@@ -66,36 +66,7 @@ class BERT_Embedding():
 
     def __init__(self):
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.bert = BertModel.from_pretrained('bert-base-uncased').eval().to(device)
-        # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
-
-    def __call__(self, batch):
-        batch = [['[CLS]'] + l.split('_') + ['[SEP]'] for l in batch]
-        batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
-
-        seq_len = max(len(l) for l in batch)
-
-        batch = [self.tokenizer.convert_tokens_to_ids(l) + [0] * (seq_len - len(l)) for l in batch]
-        masks = [[1] * len(l)                            + [0] * (seq_len - len(l)) for l in batch]
-
-        batch = torch.tensor(batch).to(self.device)
-        masks = torch.tensor(masks).to(self.device)
-
-        feature, _ = self.bert(batch, None, masks)
-        return feature
-
-    def to(self, device):
-        self.device = device
-        self.model.to(device)
-
-'''
-'''
-class XLNet_Embedding():
-    device = 'cpu'
-
-    def __init__(self):
-        self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
-        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(device)
+        self.model = BertModel.from_pretrained('bert-base-uncased').eval().to(self.device)
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
 
     def __call__(self, batch):
@@ -116,6 +87,37 @@ class XLNet_Embedding():
     def to(self, device):
         self.device = device
         self.model.to(device)
+        return self
+
+'''
+'''
+class XLNet_Embedding():
+    device = 'cpu'
+
+    def __init__(self):
+        self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+        self.model = XLNetModel.from_pretrained('xlnet-base-cased').eval().to(self.device)
+        # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
+
+    def __call__(self, batch):
+        batch = [['[CLS]'] + l.split('_') + ['[SEP]'] for l in batch]
+        batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
+
+        seq_len = max(len(l) for l in batch)
+
+        batch = [self.tokenizer.convert_tokens_to_ids(l) + [0] * (seq_len - len(l)) for l in batch]
+        masks = [[1] * len(l)                            + [0] * (seq_len - len(l)) for l in batch]
+
+        batch = torch.tensor(batch).to(self.device)
+        masks = torch.tensor(masks).to(self.device)
+
+        feature, _ = self.model(batch, None, masks)
+        return feature
+
+    def to(self, device):
+        self.device = device
+        self.model.to(device)
+        return self
 
 
 '''

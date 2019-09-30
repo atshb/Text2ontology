@@ -1,3 +1,19 @@
+'''
+Train model for classification of relationship between Compound words
+
+Usage:
+    train.py
+    train.py (word2vec | bert | xlnet) [--num_train=<nt>] [--num_valid=<nv>] [--batch_size=<bs>] [--max_epoch=<me>]
+    train.py (-h | --help)
+
+Options:
+    -h --help          show this help message and exit.
+    --num_train=<nt>   number of training   data  [default: -1].
+    --num_valid=<nv>   number of validation data  [default: -1].
+    --batch_size=<bs>  size   of   a   mini-batch [default: 32].
+    --max_epoch=<me>   maximum   training   epoch [default: 20].
+'''
+
 import pickle
 import random
 import pandas as pd
@@ -9,32 +25,35 @@ import torch.optim as optim
 import torch.utils.data as data
 
 from model import *
+from docopt import docopt
 
 
+# コマンドライン引数の取得（このファイル上部のドキュメントから自動生成）
+args = docopt(__doc__)
+num_train  = int(args['--num_train'])
+num_valid  = int(args['--num_valid'])
+batch_size = int(args['--batch_size'])
+max_epoch  = int(args['--max_epoch'])
 
-# param
-max_epoch  = 50
-batch_size = 32
+# データの読み込みとデータセットの作成
+train = pd.read_pickle('../data/wordnet/train.pkl')[:num_train]
+valid = pd.read_pickle('../data/wordnet/valid.pkl')[:num_valid]
+train_loader = data.DataLoader(Ont_Dataset(train), batch_size, shuffle=True)
+valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=True)
 
-# Loading
-train = pd.read_pickle('../data/wordnet/train.pkl')
-valid = pd.read_pickle('../data/wordnet/valid.pkl')
-
-train_loader = data.DataLoader(Ont_Dataset(train), batch_size, shuffle=False)
-valid_loader = data.DataLoader(Ont_Dataset(valid), batch_size, shuffle=False)
-
-#
+# 学習モデルの初期化
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# embed = Word2vec_Embedding().to(device)
-embed = BERT_Embedding().to(device)
-# embed = XLNet_Embedding().to(device)
-model = RNN_ONT(x_size=768).to(device)
+if   args['word2vec']: embed = Word2vec_Embedding().to(device)
+elif args['bert'    ]: embed = BERT_Embedding().to(device)
+elif args['xlnet'   ]: embed = XLNet_Embedding().to(device)
+
+model = RNN_ONT(x_size=embed.f_size).to(device)
 
 loss_func = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters())
 
-#
+# 学習
 for epoch in range(max_epoch):
 
     # Training

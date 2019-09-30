@@ -35,33 +35,36 @@ Word2vec_Embedding
     seq_lenは最も単語数の多い複合語。足りない場合は0ベクトルでパディング。
 '''
 class Word2vec_Embedding():
+    f_size = 300
     device = 'cpu'
 
     def __init__(self):
         self.w2v   = pd.read_pickle('../data/word2vec/word2vec.pkl')
         self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
-        self.vec_size = self.w2v['example'].shape
-        self.pad_vec = np.zeros(self.vec_size)
-        self.seq_len = max(len(l.split('_')) for l in self.vocab)
+        self.padding = np.zeros(self.f_size)
 
     def __call__(self, batch):
-        batch = np.stack([self.vectorize_lemma(l) for l in batch])
+        seq_len = max(len(l.split('_')) for l in batch)
+
+        batch = np.stack([self.vectorize_lemma(l, seq_len) for l in batch])
         batch = torch.from_numpy(batch).float().to(self.device)
         return batch
 
-    def vectorize_lemma(self, lemma):
+    def vectorize_lemma(self, lemma, seq_len):
         words = lemma.split('_')
-        vecs =  [self.w2v[w] if w in self.w2v else self.pad_vec for w in words]
-        vecs += [self.pad_vec] * (self.seq_len - len(words))
+        vecs =  [self.w2v[w] if w in self.w2v else self.padding for w in words]
+        vecs += [self.padding] * (seq_len - len(words))
         return np.stack(vecs)
 
     def to(self, device):
         self.device = device
+        return self
 
 
 '''
 '''
 class BERT_Embedding():
+    f_size = 762
     device = 'cpu'
 
     def __init__(self):
@@ -92,6 +95,7 @@ class BERT_Embedding():
 '''
 '''
 class XLNet_Embedding():
+    f_size = 762
     device = 'cpu'
 
     def __init__(self):
@@ -124,21 +128,22 @@ class XLNet_Embedding():
 '''
 class RNN_ONT(nn.Module):
 
-    def __init__(self, x_size=300, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
+    def __init__(self, x_size, h_size=300, y_size=4, num_cell=1, drop_rate=0.2):
         self.h_size = h_size
-        self.num_cell = 2 # 1のときは修正が必要
+        self.num_cell = num_cell
 
         super(RNN_ONT, self).__init__()
         # BiLSTM
+        rnn_drop = 0 if num_cell == 1 else drop_rate # ドロップアウトは最終層以外に適応されるので一層の場合は必要なし。
         self.lstm_a = nn.LSTM(x_size, h_size, num_layers=num_cell, batch_first=True,
-                              dropout=drop_rate, bidirectional=True)
+                              dropout=rnn_drop, bidirectional=True)
         self.lstm_b = nn.LSTM(x_size, h_size, num_layers=num_cell, batch_first=True,
-                              dropout=drop_rate, bidirectional=True)
+                              dropout=rnn_drop, bidirectional=True)
         # MLP
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
             nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
-            nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
+            # nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
             nn.Linear(4*h_size,   y_size),
         )
 
@@ -151,11 +156,14 @@ class RNN_ONT(nn.Module):
 
     def concat(self, a, b):
         _, batch_size, _ = a.size()
+        # RNNのレイヤー数が１でない場合は最終層の出力だけ利用
         if self.num_cell != 1:
             a = a.view(self.num_cell, 2, batch_size, self.h_size)[-1]
             b = b.view(self.num_cell, 2, batch_size, self.h_size)[-1]
+        # 双方向RNNは出力が２つなので連結
         a = torch.cat([e for e in a], dim=1)
         b = torch.cat([e for e in b], dim=1)
+        # 二つの出力を連結
         return torch.cat((a, b), dim=1)
 
 
@@ -176,7 +184,5 @@ def main():
         print(a.size())
 
         break
-
-
 
 if __name__ == '__main__': main()

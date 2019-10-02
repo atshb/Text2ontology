@@ -17,6 +17,8 @@ Options:
 import pickle
 import random
 import pandas as pd
+from tqdm import tqdm
+from collections import OrderedDict
 
 import torch
 import torch.nn as nn
@@ -59,33 +61,37 @@ for epoch in range(max_epoch):
     # Training
     model.train()
     epoch_loss = 0
-    for i, (x_a, x_b, t) in enumerate(train_loader):
-        #
-        e_a = embed(x_a)
-        e_b = embed(x_b)
-        t = t.to(device)
-        # calculate loss
-        y = model(e_a, e_b)
-        loss = loss_func(y, t)
-        epoch_loss += loss.cpu().item()
-        # update model
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        if (i + 1) % 1000 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
+    with tqdm(train_loader, ncols=100) as pbar:
+        for x_a, x_b, t in pbar:
+            #
+            e_a = embed(x_a)
+            e_b = embed(x_b)
+            t = t.to(device)
+            # calculate loss
+            y = model(e_a, e_b)
+            loss = loss_func(y, t)
+            epoch_loss += loss.cpu().item()
+            # update model
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            # if (i + 1) % 1000 == 0: print(f'{i + 1:>4} : {loss.cpu().item():>6.3}')
+            outputs = OrderedDict(epoch=f'{int(epoch):>2}', loss=f'{loss.cpu().item():.4f}')
+            pbar.set_postfix(outputs)
 
     # Validation
     model.eval()
     epoch_accu = 0
-    for x_a, x_b, t in valid_loader:
-        #
-        e_a = embed(x_a)
-        e_b = embed(x_b)
-        t = t.to(device)
-        # calculate accuracy
-        y = model(e_a, e_b)
-        _, y = torch.max(y.data, 1)
-        epoch_accu += sum(1 for y_i, t_i in zip(y, t) if y_i == t_i)
+    with torch.no_grad():
+        for x_a, x_b, t in valid_loader:
+            #
+            e_a = embed(x_a)
+            e_b = embed(x_b)
+            t = t.to(device)
+            # calculate accuracy
+            y = model(e_a, e_b)
+            _, y = torch.max(y.data, 1)
+            epoch_accu += sum(1 for y_i, t_i in zip(y, t) if y_i == t_i)
 
     # Show Progress
     epoch_loss /= len(train)
@@ -93,4 +99,7 @@ for epoch in range(max_epoch):
     print(f'{epoch:0>2} | loss : {epoch_loss:>7.5f} | accu : {epoch_accu:.2%}')
 
     # Save Model
-    torch.save(model.state_dict(), f'../result/bert-rnn/{epoch+1:0>2}.pkl')
+    if   args['word2vec']: dir = '../result/word2vec/'
+    elif args['bert'    ]: dir = '../result/bert/'
+    elif args['xlnet'   ]: dir = '../result/xlnet/'
+    torch.save(model.state_dict(), dir + f'{epoch+1:0>2}.pkl')

@@ -45,7 +45,6 @@ class Word2vec_Embedding():
 
     def __call__(self, batch):
         seq_len = max(len(l.split('_')) for l in batch)
-
         batch = np.stack([self.vectorize_lemma(l, seq_len) for l in batch])
         batch = torch.from_numpy(batch).float().to(self.device)
         return batch
@@ -108,14 +107,14 @@ class XLNet_Embedding():
         batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
 
         seq_len = max(len(l) for l in batch)
-
         batch = [self.tokenizer.convert_tokens_to_ids(l) + [0] * (seq_len - len(l)) for l in batch]
         masks = [[1] * len(l)                            + [0] * (seq_len - len(l)) for l in batch]
-
         batch = torch.tensor(batch).to(self.device)
         masks = torch.tensor(masks).to(self.device)
 
-        feature, _ = self.model(batch, None, masks)
+        with torch.no_grad():
+            feature, _ = self.model(batch, None, masks)
+
         return feature
 
     def to(self, device):
@@ -142,8 +141,8 @@ class RNN_ONT(nn.Module):
         # MLP
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
-            nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
-            # nn.Linear(4*h_size, 4*h_size), nn.ReLU(), nn.Dropout(),
+            nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
+            # nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
             nn.Linear(4*h_size,   y_size),
         )
 

@@ -64,6 +64,11 @@ sup_subs  = [(a, b, 1) for a, b in sup_subs ]
 sub_sups  = [(a, b, 2) for a, b in sub_sups ]
 unrelated = [(a, b, 3) for a, b in unrelated]
 
+print(len(synonyms))
+print(len(sup_subs))
+print(len(sub_sups))
+print(len(unrelated))
+
 ## データの統合とシャッフル
 dataset = synonyms + sup_subs + sub_sups + unrelated
 random.shuffle(dataset)

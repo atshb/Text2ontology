@@ -78,11 +78,9 @@ for epoch in range(max_epoch):
     with torch.no_grad():
         for x_a, x_b, t in valid_loader:
             #
-            e_a = embed(x_a)
-            e_b = embed(x_b)
             t = t.to(device)
             # calculate accuracy
-            y = model(e_a, e_b)
+            y = model(x_a, x_b)
             _, y = torch.max(y.data, 1)
             epoch_accu += sum(1 for y_i, t_i in zip(y, t) if y_i == t_i)
 

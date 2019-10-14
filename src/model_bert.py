@@ -39,7 +39,7 @@ class BERT_Classifier(nn.Module):
         super(BERT_Classifier, self).__init__()
         #
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.bert = BertModel.from_pretrained('bert-base-uncased').train()
+        self.bert = BertModel.from_pretrained('bert-base-uncased').eval()
 
         self.max_seq_len = 27
 

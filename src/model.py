@@ -14,8 +14,6 @@ from transformers import BertModel, BertTokenizer, XLNetModel, XLNetTokenizer
 
 '''
 Wordnet_Dataset
-    ワードネットから抽出したデータセットを制御するためのクラス。
-    preprocess_wordnet.pyを実行してからでないと使えないので注意。
 '''
 class Ont_Dataset(data.Dataset):
 
@@ -70,10 +68,13 @@ class BERT_Embedding():
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.model = BertModel.from_pretrained('bert-base-uncased').eval().to(self.device)
         # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
+        print('loading is finished')
 
     def __call__(self, batch):
-        batch = [['[CLS]'] + l.split('_') + ['[SEP]'] for l in batch]
-        batch = [self.tokenizer.tokenize(' '.join(l)) for l in batch]
+        batch = [['[CLS]'] + l.split('_') + ['[SEP]']  for l in batch]
+        print(batch)
+        batch = [self.tokenizer.tokenize(l.split('_')) for l in batch]
+        print(batch)
 
         seq_len = max(len(l) for l in batch)
 
@@ -167,16 +168,16 @@ class RNN_ONT(nn.Module):
 
 
 def main():
-    batch_size = 64
+    batch_size = 2
 
-    train = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
+    train = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl')[:2])
     # valid = Ont_Dataset(pd.read_pickle('../data/wordnet/train.pkl'))
 
     train_loader = data.DataLoader(train, batch_size=batch_size, shuffle=False)
     # valid_loader = data.DataLoader(valid, batch_size=batch_size, shuffle=False)
 
     # embed = Word2vec_Embedding()
-    embed = XLNet_Embedding('cuda')
+    embed = BERT_Embedding()
 
     for a, b, l in train_loader:
         a = embed(a)

@@ -39,7 +39,7 @@ class BERT_Classifier(nn.Module):
         super(BERT_Classifier, self).__init__()
         #
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.bert = BertModel.from_pretrained('bert-base-uncased').eval()
+        self.bert = BertModel.from_pretrained('bert-base-uncased').train()
 
         self.max_seq_len = 27
 
@@ -47,8 +47,8 @@ class BERT_Classifier(nn.Module):
         h_size = self.max_seq_len * 768
 
         self.classifier = nn.Sequential(
-            nn.Linear(h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(),
-            nn.Linear(h_size, y_size),
+            nn.Linear(h_size, 128), nn.ReLU(inplace=True), nn.Dropout(),
+            nn.Linear(128   , 128),
         )
 
 
@@ -84,6 +84,7 @@ class BERT_Classifier(nn.Module):
     def to(self, device):
         self.device = device
         self.bert.to(device)
+        self.classifier.to(device)
         return self
 
 

@@ -41,7 +41,7 @@ class BERT_Classifier(nn.Module):
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert = BertModel.from_pretrained('bert-base-uncased').train()
 
-        self.max_seq_len = 27
+        self.max_seq_len = 30
 
         # MLP
         h_size = self.max_seq_len * 768

@@ -60,42 +60,37 @@ class Word2vec_Embedding():
 
 '''
 '''
-class BERT_Embedding():
-    f_size = 762
+class BERT_Encoder(nn.Module):
+    f_size = 768
     device = 'cpu'
 
-    def __init__(self):
+    def __init__(self, mode='train'):
+        super(BERT_Encoder, self).__init__()
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.model = BertModel.from_pretrained('bert-base-uncased').eval().to(self.device)
-        # self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
-        print('loading is finished')
+        self.transformer = BertModel.from_pretrained('bert-base-uncased')
 
-    def __call__(self, batch):
+    def forward(self, batch):
         batch = [['[CLS]'] + l.split('_') + ['[SEP]']  for l in batch]
-        print(batch)
         batch = [self.tokenizer.tokenize(l.split('_')) for l in batch]
-        print(batch)
-
+        #
         seq_len = max(len(l) for l in batch)
-
+        #
         batch = [self.tokenizer.convert_tokens_to_ids(l) + [0] * (seq_len - len(l)) for l in batch]
-        masks = [[1] * len(l)                            + [0] * (seq_len - len(l)) for l in batch]
-
         batch = torch.tensor(batch).to(self.device)
-        masks = torch.tensor(masks).to(self.device)
+        #
+        f, _ = self.transformer(batch)
 
-        feature, _ = self.model(batch, None, masks)
-        return feature
+        return f
 
     def to(self, device):
         self.device = device
-        self.model.to(device)
+        self.transformer.to(device)
         return self
 
 '''
 '''
 class XLNet_Embedding():
-    f_size = 762
+    f_size = 768
     device = 'cpu'
 
     def __init__(self):
@@ -126,19 +121,17 @@ class XLNet_Embedding():
 
 '''
 '''
-class RNN_ONT(nn.Module):
+class TwinRNN_Classifier(nn.Module):
 
-    def __init__(self, x_size, h_size=300, y_size=4, num_cell=1, drop_rate=0.2):
-        self.h_size = h_size
+    def __init__(self, x_size, h_size=128, y_size=4, num_cell=1, drop_rate=0.2):
+        super(TwinRNN_Classifier, self).__init__()
+        # あとで使うパラメーター
+        self.h_size   = h_size
         self.num_cell = num_cell
-
-        super(RNN_ONT, self).__init__()
         # BiLSTM
         rnn_drop = 0 if num_cell == 1 else drop_rate # ドロップアウトは最終層以外に適応されるので一層の場合は必要なし。
-        self.lstm_a = nn.LSTM(x_size, h_size, num_layers=num_cell, batch_first=True,
-                              dropout=rnn_drop, bidirectional=True)
-        self.lstm_b = nn.LSTM(x_size, h_size, num_layers=num_cell, batch_first=True,
-                              dropout=rnn_drop, bidirectional=True)
+        self.lstm_a = nn.LSTM(x_size, h_size, num_layers=num_cell, batch_first=True, dropout=rnn_drop, bidirectional=True)
+        self.lstm_b = nn.LSTM(x_size, h_size, num_layers=num_cell, batch_first=True, dropout=rnn_drop, bidirectional=True)
         # MLP
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
@@ -147,7 +140,8 @@ class RNN_ONT(nn.Module):
             nn.Linear(4*h_size,   y_size),
         )
 
-    def forward(self, x_a, x_b):
+    def forward(self, x):
+        x_a, x_b = x
         _, (h_a, _) = self.lstm_a(x_a)
         _, (h_b, _) = self.lstm_b(x_b)
         h = self.concat(h_a, h_b)

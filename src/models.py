@@ -11,16 +11,17 @@ from transformers import BertTokenizer, BertConfig, BertForSequenceClassificatio
 '''
 class BertClassifier(nn.Module):
 
-    def __init__(self, pretrained_weights, max_seq_len=20):
+    def __init__(self, pretrained_weights, max_seq_len=30):
         super(BertClassifier, self).__init__()
         # パラメーター
         self.max_seq_len = max_seq_len
+        #
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # BERT用トークナイザー
         self.tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
         # BERTによる文章分類モデル
         config = BertConfig(num_labels=4)
         self.model = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
-        print(self.model.config.num_labels)
 
     def forward(self, x_a, x_b):
         tokens, token_types = self.encode(x_a, x_b)
@@ -40,8 +41,11 @@ class BertClassifier(nn.Module):
         # トークンをidに
         batch_tokens = [self.tokenizer.convert_tokens_to_ids(tks) for tks in batch_tokens]
         #
-        batch_tokens = torch.LongTensor(batch_tokens)
-        batch_ttypes = torch.LongTensor(batch_ttypes)
+        batch_tokens = torch.LongTensor(batch_tokens).to(self.device)
+        batch_ttypes = torch.LongTensor(batch_ttypes).to(self.device)
+        # print()
+        # print(batch_tokens)
+        # print(batch_ttypes)
 
         return batch_tokens, batch_ttypes
 

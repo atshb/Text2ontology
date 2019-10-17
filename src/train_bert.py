@@ -109,14 +109,21 @@ def main():
     model = BertClassifier('bert-base-uncased').to(args['--device'])
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters())
+    #
+    no_decay = ['bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': args.weight_decay},
+        {'params': [p for n, p in model.named_parameters() if     any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    ]
+    optimizer = optim.Adam(optimizer_grouped_parameters
+    # optimizer = AdamW(optimizer_grouped_parameters, lr=5e-5, eps=1e-8)
+    # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=t_total)
 
     # 学習
     for epoch in range(args['--max_epoch']):
         print('='*50 + f' Epoch {epoch:0>2} ' + '='*50)
         train_model(model, train_loader, args, loss_func, optimizer)
         valid_model(model, valid_loader, args, loss_func)
-        # print('='*100)
 
 
 if __name__ == '__main__': main()

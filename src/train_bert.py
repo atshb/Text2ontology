@@ -114,8 +114,8 @@ def main():
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': args.weight_decay},
         {'params': [p for n, p in model.named_parameters() if     any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-        ]
-    optimizer = optim.Adam(optimizer_grouped_parameters
+    ]
+    optimizer = optim.Adam(optimizer_grouped_parameters)
     # optimizer = AdamW(optimizer_grouped_parameters, lr=5e-5, eps=1e-8)
     # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=t_total)
 

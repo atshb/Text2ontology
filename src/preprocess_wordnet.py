@@ -88,6 +88,8 @@ print('num of unrelated pairs', len(unrelated))
 dataset = synonyms + sup_subs + sub_sups + unrelated
 random.shuffle(dataset)
 
+print(dataset[:10])
+
 ## トレーニング用とテスト用に分割
 num_train = len(dataset) - (num_valid + num_test)
 

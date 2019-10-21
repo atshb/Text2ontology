@@ -38,29 +38,24 @@ def train_model(model, dataloader, args, loss_func, optimizer):
     model.train()
 
     epoch_loss = 0
-    epoch_right = 0
-    epoch_wrong = 0
+    epoch_accu = 0
+    with tqdm(dataloader, ncols=56) as pbar:
+        for x_a, x_b, t in pbar:
+            t = t.to(args['--device'])
+            # calculate loss
+            optimizer.zero_grad()
+            y = model(x_a, x_b)
+            loss = loss_func(y, t)
+            _, p = torch.max(y, 1)
+            # update model
+            loss.backward()
+            optimizer.step()
+            #
+            epoch_loss += loss.cpu().item()
+            epoch_accu += torch.sum(p == t).item()
 
-    with torch.set_grad_enabled(True):
-        with tqdm(dataloader, ncols=110) as pbar:
-            for x_a, x_b, t in pbar:
-                t = t.to(args['--device'])
-                # calculate loss
-                optimizer.zero_grad()
-                y = model(x_a, x_b)
-                loss = loss_func(y, t)
-                _, p = torch.max(y, 1)
-                # update model
-                loss.backward()
-                optimizer.step()
-                #
-                epoch_loss += loss.cpu().item()
-                epoch_right += torch.sum(p == t.data).item()
-                epoch_wrong += torch.sum(p != t.data).item()
-                epoch_accu = epoch_right / (epoch_right + epoch_wrong)
-                #
-                pbar.set_description('Train')
-                pbar.set_postfix_str(f'loss:{epoch_loss:>8.2f}, accu:{epoch_accu:>7.2%}')
+    num_data = len(dataloader.dataset)
+    return epoch_loss / num_data, epoch_accu / num_data
 
 
 '''
@@ -69,26 +64,21 @@ def valid_model(model, dataloader, args, loss_func, optimizer):
     model.eval()
 
     epoch_loss = 0
-    epoch_right = 0
-    epoch_wrong = 0
-
+    epoch_accu = 0
     with torch.set_grad_enabled(False):
-        with tqdm(dataloader, ncols=110) as pbar:
-            for x_a, x_b, t in pbar:
-                t = t.to(args['--device'])
-                # calculate accuracy
-                optimizer.zero_grad()
-                y = model(x_a, x_b)
-                loss = loss_func(y, t)
-                _, p = torch.max(y, 1)
-                #
-                epoch_loss += loss.cpu().item()
-                epoch_right += torch.sum(p == t.data).item()
-                epoch_wrong += torch.sum(p != t.data).item()
-                epoch_accu = epoch_right / (epoch_right + epoch_wrong)
-                #
-                pbar.set_description('Valid')
-                pbar.set_postfix_str(f'loss:{epoch_loss:>8.2f}, accu:{epoch_accu:>7.2%}')
+        for x_a, x_b, t in dataloader:
+            t = t.to(args['--device'])
+            # calculate accuracy
+            optimizer.zero_grad()
+            y = model(x_a, x_b)
+            loss = loss_func(y, t)
+            _, p = torch.max(y, 1)
+            #
+            epoch_loss += loss.cpu().item()
+            epoch_accu += torch.sum(p == t).item()
+
+    num_data = len(dataloader.dataset)
+    return epoch_loss / num_data, epoch_accu / num_data
 
 
 '''
@@ -122,9 +112,13 @@ def main():
 
     # 学習
     for epoch in range(args['--max_epoch']):
-        print('='*50 + f' Epoch {epoch:0>2} ' + '='*50)
-        train_model(model, train_loader, args, loss_func, optimizer)
-        valid_model(model, valid_loader, args, loss_func, optimizer)
+        print('='*23 + f' Epoch {epoch:0>2} ' + '='*23)
+
+        loss, accu = train_model(model, train_loader, args, loss_func, optimizer)
+        print(f'| Train-{epoch:0>2} | loss-avg : {loss:>8.6f} | accuracy : {accu:>8.3%} |')
+
+        loss, accu = valid_model(model, valid_loader, args, loss_func, optimizer)
+        print(f'| Valid-{epoch:0>2} | loss-avg : {loss:>8.6f} | accuracy : {accu:>8.3%} |')
 
 
 if __name__ == '__main__': main()

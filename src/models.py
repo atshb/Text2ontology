@@ -100,7 +100,8 @@ class BertClassifier(nn.Module):
 
     def forward(self, x_a, x_b, t):
         tokens, token_types = self.encode(x_a, x_b)
-        loss, y = self.model(tokens, token_type_ids=token_types, labels=t)[0]
+        loss, y = self.model(tokens, labels=t)
+        # loss, y = self.model(tokens, token_type_ids=token_types, labels=t)
         return loss, y
 
     def encode(self, batch_a, batch_b):

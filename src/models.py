@@ -91,7 +91,7 @@ class BertClassifier(nn.Module):
         super(BertClassifier, self).__init__()
         # パラメーター
         self.args = args
-        self.seq_len = 15
+        self.seq_len = 50
         # BERT用トークナイザー
         self.tokenizer = BertTokenizer.from_pretrained(args['--weights'])
         # BERTによる文章分類モデル

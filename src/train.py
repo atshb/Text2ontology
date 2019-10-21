@@ -48,11 +48,11 @@ def train_model(model, dataloader, args, loss_func, optimizer):
             t = t.to(args['--device'])
             # calculate loss
             optimizer.zero_grad()
-            y = model(x_a, x_b)
+            err, y = model(x_a, x_b, t)
             loss = loss_func(y, t)
             _, p = torch.max(y, 1)
             # update model
-            loss.backward()
+            err.backward()
             optimizer.step()
             #
             epoch_loss += loss.cpu().item()
@@ -74,7 +74,7 @@ def valid_model(model, dataloader, args, loss_func, optimizer):
             t = t.to(args['--device'])
             # calculate accuracy
             optimizer.zero_grad()
-            y = model(x_a, x_b)
+            err, y = model(x_a, x_b, t)
             loss = loss_func(y, t)
             _, p = torch.max(y, 1)
             #
@@ -113,7 +113,7 @@ def main():
     model.to(args['--device'])
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters())
+    optimizer = optim.Adam(model.parameters(), lr=args['--lr'])
 
     # 学習
     for epoch in range(args['--max_epoch']):

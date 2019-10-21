@@ -98,10 +98,10 @@ class BertClassifier(nn.Module):
         config = BertConfig(num_labels=4)
         self.model = BertForSequenceClassification.from_pretrained(args['--weights'], config=config)
 
-    def forward(self, x_a, x_b):
+    def forward(self, x_a, x_b, t):
         tokens, token_types = self.encode(x_a, x_b)
-        y = self.model(tokens, token_type_ids=token_types)[0]
-        return y
+        loss, y = self.model(tokens, token_type_ids=token_types, labels=t)[0]
+        return loss, y
 
     def encode(self, batch_a, batch_b):
         # BPEでトークンに分割

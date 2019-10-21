@@ -48,7 +48,7 @@ class Word2vec_Embedding():
         return batch
 
     def vectorize_lemma(self, lemma, seq_len):
-        words = lemma.split('_')
+        words = lemma.split()
         vecs =  [self.w2v[w] if w in self.w2v else self.padding for w in words]
         vecs += [self.padding] * (seq_len - len(words))
         return np.stack(vecs)

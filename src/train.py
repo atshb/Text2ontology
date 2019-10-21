@@ -95,7 +95,7 @@ def main():
     args['--batch_size'] = int(args['--batch_size'])
     args['--num_train']  = int(args['--num_train'])
     args['--num_valid']  = int(args['--num_valid'])
-    args['--lr']         = int(args['--lr'])
+    args['--lr'] = float(args['--lr'])
     #
     if args['--device']: args['--device'] = torch.device(args['--device'])
     else               : args['--device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

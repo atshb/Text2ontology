@@ -7,9 +7,9 @@ Usage:
 
 Options:
     -h --help             show this help message and exit.
-    --max_num_char=<mc>   maximum number of char     [default: 30].
-    --max_num_word=<mw>   maximum number of word     [default: 5].
-    --num_unrelated=<nu>  number of unrelated data   [default: 1000000].
+    --max_num_char=<mc>   maximum number of char     [default: 15].
+    --max_num_word=<mw>   maximum number of word     [default: 3].
+    --num_unrelated=<nu>  number of unrelated data   [default: 500000].
     --num_valid=<nv>      number of validation data  [default: 10000].
     --num_test=<nd>       number of test data        [default: 10000].
 '''

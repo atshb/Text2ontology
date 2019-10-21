@@ -2,7 +2,13 @@
 Train model for classification of relationship between Compound words
 
 Usage:
-    train_bert.py [--device=<dv>] [--max_epoch=<me>] [--batch_size=<bs>] [--num_train=<nt>] [--num_valid=<nv>]
+    train_bert.py [--device=<dv>]
+                  [--max_epoch=<me>]
+                  [--batch_size=<bs>]
+                  [--num_train=<nt>]
+                  [--num_valid=<nv>]
+                  [--learning_rate=<lr>]
+                  [--max_seq_len=<ms>]
     train_bert.py (-h | --help)
 
 Options:
@@ -46,7 +52,6 @@ def train_model(model, dataloader, args, loss_func, optimizer):
                 loss = loss_func(y, t)
                 _, p = torch.max(y, 1)
                 # update model
-                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 #
@@ -61,7 +66,7 @@ def train_model(model, dataloader, args, loss_func, optimizer):
 
 '''
 '''
-def valid_model(model, dataloader, args, loss_func):
+def valid_model(model, dataloader, args, loss_func, optimizer):
     model.eval()
 
     epoch_loss = 0
@@ -73,6 +78,7 @@ def valid_model(model, dataloader, args, loss_func):
             for x_a, x_b, t in pbar:
                 t = t.to(args['--device'])
                 # calculate accuracy
+                optimizer.zero_grad()
                 y = model(x_a, x_b)
                 loss = loss_func(y, t)
                 _, p = torch.max(y, 1)
@@ -106,7 +112,7 @@ def main():
     valid_loader = data.DataLoader(valid_dataset, args['--batch_size'], shuffle=True)
 
     # 学習モデル
-    model = BertClassifier('bert-base-uncased').to(args['--device'])
+    model = BertClassifier('bert-base-uncased', max_seq_len=15).to(args['--device'])
 
     loss_func = nn.CrossEntropyLoss()
     #
@@ -115,7 +121,7 @@ def main():
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.0},
         {'params': [p for n, p in model.named_parameters() if     any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-    optimizer = optim.Adam(optimizer_grouped_parameters)
+    optimizer = optim.Adam(optimizer_grouped_parameters, lr=0.01)
     # optimizer = AdamW(optimizer_grouped_parameters, lr=5e-5, eps=1e-8)
     # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=t_total)
 
@@ -123,7 +129,7 @@ def main():
     for epoch in range(args['--max_epoch']):
         print('='*50 + f' Epoch {epoch:0>2} ' + '='*50)
         train_model(model, train_loader, args, loss_func, optimizer)
-        valid_model(model, valid_loader, args, loss_func)
+        valid_model(model, valid_loader, args, loss_func, optimizer)
 
 
 if __name__ == '__main__': main()

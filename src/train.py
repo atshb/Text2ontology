@@ -8,14 +8,18 @@ Usage:
                                  [--batch_size=<bs>]
                                  [--num_train=<nt>]
                                  [--num_valid=<nv>]
+                                 [--lr=<lr>]
+                                 [--weights=<wg>]
 
 Options:
-    -h --help         :  show this help message and exit.
-    --device=<dv>     :  device e.g.('cpu', 'cuda', 'cuda:0')
-    --max_epoch=<me>  :  maximum training epoch.     [default: 20]
-    --batch_size=<bs> :  size of mini-batch.         [default: 32]
-    --num_train=<nt>  :  number of training   data.  [default: -1]
-    --num_valid=<nv>  :  number of validation data.  [default: -1]
+    -h --help          show this help message and exit.
+    --device=<dv>      device e.g.('cpu', 'cuda', 'cuda:0')
+    --max_epoch=<me>   maximum training epoch.    [default: 20]
+    --batch_size=<bs>  size of mini-batch.        [default: 32]
+    --num_train=<nt>   number of training   data. [default: -1]
+    --num_valid=<nv>   number of validation data. [default: -1]
+    --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
+    --weights=<wg>     pretrained weights         [default: bert-base-uncased]
 '''
 
 import torch
@@ -87,14 +91,14 @@ def main():
     # コマンドライン引数の取得（このファイル上部のドキュメントから自動生成）
     args = docopt(__doc__)
 
-    args['--max_epoch' ] = int(args['--max_epoch' ])
+    args['--max_epoch']  = int(args['--max_epoch'])
     args['--batch_size'] = int(args['--batch_size'])
-    args['--num_train' ] = int(args['--num_train' ])
-    args['--num_valid' ] = int(args['--num_valid' ])
+    args['--num_train']  = int(args['--num_train'])
+    args['--num_valid']  = int(args['--num_valid'])
+    args['--lr']         = int(args['--lr'])
     #
     if args['--device']: args['--device'] = torch.device(args['--device'])
     else               : args['--device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    args['--weights'] = 'bert-base-uncased'
     pprint(args)
 
     # データの読み込みとデータセットの作成
@@ -104,8 +108,9 @@ def main():
     valid_loader = data.DataLoader(valid_dataset, args['--batch_size'], shuffle=False)
 
     # 学習モデル
-    if   args['w2v-rnn']: model = Word2vecRnnClassifier(args).to(args['--device'])
-    elif args['bert-ft']: model = BertClassifier(args).to(args['--device'])
+    if   args['w2v-rnn']: model = Word2vecRnnClassifier(args)
+    elif args['bert-ft']: model = BertClassifier(args)
+    model.to(args['--device'])
 
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())

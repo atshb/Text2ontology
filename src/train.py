@@ -4,10 +4,10 @@ Train model for classification of relationship between Compound words
 Usage:
     train.py (-h | --help)
     train.py (w2v-rnn | bert-ft) [--device=<dv>]
-                                       [--max_epoch=<me>]
-                                       [--batch_size=<bs>]
-                                       [--num_train=<nt>]
-                                       [--num_valid=<nv>]
+                                 [--max_epoch=<me>]
+                                 [--batch_size=<bs>]
+                                 [--num_train=<nt>]
+                                 [--num_valid=<nv>]
 
 Options:
     -h --help         :  show this help message and exit.
@@ -118,16 +118,7 @@ def main():
     elif args['bert-ft']: model = BertClassifier(args).to(args['--device'])
 
     loss_func = nn.CrossEntropyLoss()
-    #
-    # no_decay = ['bias', 'LayerNorm.weight']
-    # optimizer_grouped_parameters = [
-    #     {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.0},
-    #     {'params': [p for n, p in model.named_parameters() if     any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-    # ]
-    # optimizer = optim.Adam(optimizer_grouped_parameters, lr=0.01)
     optimizer = optim.Adam(model.parameters())
-    # optimizer = AdamW(optimizer_grouped_parameters, lr=5e-5, eps=1e-8)
-    # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=0, t_total=t_total)
 
     # 学習
     for epoch in range(args['--max_epoch']):

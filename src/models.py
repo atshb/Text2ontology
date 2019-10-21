@@ -23,8 +23,8 @@ class TwinRnnClassifier(nn.Module):
         # MLP
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
-            # nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
-            # nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
+            nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
+            nn.Linear(4*h_size, 4*h_size), nn.ReLU(inplace=True), nn.Dropout(),
             nn.Linear(4*h_size,   y_size),
         )
 

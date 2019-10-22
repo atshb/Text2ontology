@@ -85,7 +85,6 @@ class BertEncoder():
         return tokens, ttypes
 
 
-
 '''
 テスト用
 '''

@@ -119,10 +119,14 @@ def main():
     # 学習
     for epoch in range(1, max_epoch+1):
         print('='*27 + f' Epoch {epoch:0>2} ' + '='*27)
+        # Training
         loss, accu = train_model(model, loss_func, optimizer, train_loader, device)
         print(f'|  Training    |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
+        # Validation
         loss, accu = valid_model(model, loss_func, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
+        # 保存
+        torch.save(model.state_dict(), f'../result/bert.pkl')
 
 
 if __name__ == '__main__': main()

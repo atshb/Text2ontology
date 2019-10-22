@@ -2,25 +2,24 @@ import torch
 import torch.utils.data as data
 import numpy  as np
 import pandas as pd
-from transformers import BertTokenizer
 
 
 '''
 WordnetDataset
     Wordnetから取得したデータを扱うクラス。
-    データ：語句のペア
-    ラベル：関係性ラベル（同義語、上位下位、下位上位、無関係）
+    data   : 語句のペア
+    labels : 関係性ラベル（同義語、上位下位、下位上位、無関係）
 '''
 class WordnetDataset(data.Dataset):
 
     def __init__(self, mode='train', num_data=-1, transform=None):
         # 読み込み
-        if   mode == 'train': data = pd.read_pickle('../data/wordnet/train.pkl')[:num_data]
-        elif mode == 'valid': data = pd.read_pickle('../data/wordnet/valid.pkl')[:num_data]
-        elif mode == 'test' : data = pd.read_pickle('../data/wordnet/test.pkl' )[:num_data]
+        if   mode == 'train': data = pd.read_pickle('../data/wordnet/train.pkl')
+        elif mode == 'valid': data = pd.read_pickle('../data/wordnet/valid.pkl')
+        elif mode == 'test' : data = pd.read_pickle('../data/wordnet/test.pkl' )
         #
-        self.data   = [(a, b) for a, b, _ in data]
-        self.labels = [l      for _, _, l in data]
+        self.data   = [(a, b) for a, b, _ in data[:num_data]]
+        self.labels = [l      for _, _, l in data[:num_data]]
         self.transform = transform
 
     def __len__(self):
@@ -30,20 +29,21 @@ class WordnetDataset(data.Dataset):
         x = self.data[idx]
         y = self.labels[idx]
         if self.transform: x = self.transform(x)
-
         return x, y
 
 
 '''
 Word2vecEmbedding
-    語句をテンソル(seq_len, 300)に変換するクラス。
-    seq_lenに合わせてゼロベクトルでパディング。
+    語句のペアを学習済 Word Embedding でベクトル化する transform クラス。
+    Dataset クラスに tranform クラスとして渡される。
+    単語数が seq_len 未満の場合はゼロベクトルでパディング。
+    in  : 語句のペア
+    out : 行列 (seq_len, 300) のペア
 '''
 class Word2vecEmbedding():
 
     def __init__(self, seq_len=20):
-        self.w2v   = pd.read_pickle('../data/word2vec/word2vec.pkl')
-        self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
+        self.w2v = pd.read_pickle('../data/word2vec/word2vec.pkl')
         self.seq_len = seq_len
         self.padding = np.zeros(300)
 
@@ -58,16 +58,16 @@ class Word2vecEmbedding():
 
 
 '''
-BertEncoder
-    BERTに二つの文を単一入力として渡すための変換クラス。
-    各文はByte Pair Encoding(BPE)によりサブワードに分割され、さらにサブワードIDに変換される。
+TwinPhraseEncoder
+    BERTに二つの文を単一入力として渡すための transform クラス。
+    各文は Byte Pair Encoding(BPE) によりサブワードに分割され、さらにIDに変換される。
     また、二つの文を区別するため、トークンタイプ行列とセットで出力。
 '''
-class BertEncoder():
+class TwinPhraseEncoder():
 
-    def __init__(self, pretrained_weights, seq_len=70):
+    def __init__(self, tokenizer, seq_len=70):
         self.seq_len = seq_len
-        self.tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+        self.tokenizer = tokenizer
 
     def __call__(self, x):
         # BPEでトークンに分割
@@ -89,7 +89,7 @@ class BertEncoder():
 テスト用
 '''
 def test():
-    # transform = BertEncoder('bert-base-uncased')
+    # transform = TwinPhraseEncoder('bert-base-uncased')
     # train = data.DataLoader(WordnetDataset('train', num_data=4, transform=transform), batch_size=2)
 
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')

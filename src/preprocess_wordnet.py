@@ -41,7 +41,7 @@ lemmas = wn.all_lemma_names(pos='n')
 lemma_set = set(l for l in lemmas if len(l) <= max_num_char and len(l.split('_')) <= max_num_word)
 
 ## 保存
-pd.to_pickle(lemma_set, dir + 'vocab.pkl')
+pd.to_pickle(lemma_set, dir + 'vocabulary.pkl')
 
 ## 同義語のペアの追加
 synonyms = []

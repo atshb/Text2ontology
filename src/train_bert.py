@@ -4,6 +4,7 @@ Train model for classification of relationship between Compound words
 Usage:
     train_bert.py (-h | --help)
     train_bert.py [--lr=<lr>]
+                  [--seq_len=<sl>]
                   [--max_epoch=<me>]
                   [--batch_size=<bs>]
                   [--num_train=<nt>]
@@ -12,6 +13,7 @@ Usage:
 Options:
     -h --help          show this help message and exit.
     --lr=<lr>          leaning rate of optimizer. [default: 1e-5]
+    --seq_len=<sl>     maximum sequence length.   [default: 30]
     --max_epoch=<me>   maximum training epoch.    [default: 20]
     --batch_size=<bs>  size of mini-batch.        [default: 32]
     --num_train=<nt>   number of training   data. [default: -1]

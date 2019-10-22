@@ -93,6 +93,7 @@ def main():
     pprint(args)
 
     lr = float(args['--lr'])
+    seq_len    = int(args['--seq_len'])
     max_epoch  = int(args['--max_epoch'])
     batch_size = int(args['--batch_size'])
     num_train  = int(args['--num_train'])
@@ -101,7 +102,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # データの読み込みとデータセットの作成
-    embedding = Word2vecEmbedding()
+    embedding = Word2vecEmbedding(seq_len=seq_len)
 
     train_dataset = WordnetDataset(mode='train', num_data=num_train, transform=embedding)
     valid_dataset = WordnetDataset(mode='valid', num_data=num_valid, transform=embedding)

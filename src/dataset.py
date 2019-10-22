@@ -41,7 +41,7 @@ Word2vecEmbedding
 '''
 class Word2vecEmbedding():
 
-    def __init__(self, seq_len=5):
+    def __init__(self, seq_len=20):
         self.w2v   = pd.read_pickle('../data/word2vec/word2vec.pkl')
         self.vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
         self.seq_len = seq_len
@@ -65,7 +65,7 @@ BertEncoder
 '''
 class BertEncoder():
 
-    def __init__(self, pretrained_weights, seq_len=50):
+    def __init__(self, pretrained_weights, seq_len=70):
         self.seq_len = seq_len
         self.tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 

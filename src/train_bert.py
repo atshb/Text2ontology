@@ -105,7 +105,7 @@ def main():
 
     elif args['bert-large']:
         pretrained_weights = 'bert-large-uncased'
-        tokenizer =
+        tokenizer = BertTokenizer(pretrained_weights)
         config = BertConfig(num_labels=4)
         model = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
 

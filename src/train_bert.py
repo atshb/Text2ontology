@@ -99,13 +99,13 @@ def main():
     # モデルの選択
     if args['bert']:
         pretrained_weights = 'bert-base-uncased'
-        tokenizer = BertTokenizer(pretrained_weights)
+        tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
         config = BertConfig(num_labels=4)
         model = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
 
     elif args['bert-large']:
         pretrained_weights = 'bert-large-uncased'
-        tokenizer = BertTokenizer(pretrained_weights)
+        tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
         config = BertConfig(num_labels=4)
         model = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
 

@@ -65,11 +65,12 @@ TwinPhraseEncoder
 '''
 class TwinPhraseEncoder():
 
-    def __init__(self, tokenizer, seq_len=70):
+    def __init__(self, tokenizer, seq_len=50):
         self.seq_len = seq_len
         self.tokenizer = tokenizer
 
     def __call__(self, x):
+        '''
         # BPEでトークンに分割
         a = self.tokenizer.tokenize('[CLS]' + x[0] + '[SEP]')
         b = self.tokenizer.tokenize(          x[1] + '[SEP]')
@@ -83,22 +84,34 @@ class TwinPhraseEncoder():
         ttypes = torch.LongTensor(ttypes + [0] * (self.seq_len - len(ttypes)))
 
         return tokens, ttypes
+        '''
+        encoded = self.tokenizer.encode_plus(x[0], x[1], max_length=self.seq_len)
+        #
+        tokens = encoded['input_ids']
+        ttypes = encoded['token_type_ids']
+        # テンソル化 & 最大長にあわせてパディング
+        tokens += [0] * (self.seq_len - len(tokens))
+        ttypes += [0] * (self.seq_len - len(ttypes))
+
+        return torch.LongTensor(tokens), torch.LongTensor(ttypes)
+
 
 
 '''
 テスト用
 '''
 def test():
-    # transform = TwinPhraseEncoder('bert-base-uncased')
+    from transformers import BertTokenizer, RobertaTokenizer
+
     # train = data.DataLoader(WordnetDataset('train', num_data=4, transform=transform), batch_size=2)
 
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    #tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+    transform = TwinPhraseEncoder(tokenizer, seq_len=15)
 
-    encoded = tokenizer.encode_plus('I have a pen', 'I have an apple', max_length=30)
-    token_ids = encoded['input_ids']
-    ttype_ids = encoded['token_type_ids']
-    token_ids += [0] * (seq_len - len(token_ids))
-    ttype_ids += [0] * (seq_len - len(ttype_ids))
+    encoded = transform(('I have a pen', 'I have an apple'),)
+    print(encoded[0])
+    print(encoded[1])
 
 
 if __name__ == '__main__': test()

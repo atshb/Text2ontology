@@ -2,14 +2,13 @@
 Train model for classification of relationship between Compound words
 
 Usage:
-    train_bert.py (-h | --help)
-    train_bert.py (bert | bert-large | xlnet | roberta | distilbert)
-                  [--lr=<lr>]
-                  [--seq_len=<sl>]
-                  [--max_epoch=<me>]
-                  [--batch_size=<bs>]
-                  [--num_train=<nt>]
-                  [--num_valid=<nv>]
+    train_distilbert.py (-h | --help)
+    train_distilbert.py [--lr=<lr>]
+                        [--seq_len=<sl>]
+                        [--max_epoch=<me>]
+                        [--batch_size=<bs>]
+                        [--num_train=<nt>]
+                        [--num_valid=<nv>]
 
 Options:
     -h --help          show this help message and exit.
@@ -48,7 +47,7 @@ def train_model(model, optimizer, dataloader, device):
             types = types.to(device)
             # calculate loss
             optimizer.zero_grad()
-            loss, y = model(x, token_type_ids=types, labels=t)
+            loss, y = model(x, labels=t)
             _, p = torch.max(y, 1)
             # update model
             loss.backward()
@@ -75,7 +74,7 @@ def valid_model(model, optimizer, dataloader, device):
             types = types.to(device)
             # calculate loss
             optimizer.zero_grad()
-            loss, y = model(x, token_type_ids=types, labels=t)
+            loss, y = model(x, labels=t)
             _, p = torch.max(y, 1)
             #
             epoch_loss += loss.cpu().item()
@@ -101,32 +100,10 @@ def main():
     num_valid  = int(args['--num_valid'])
 
     # モデルの選択
-    if args['bert']:
-        pretrained_weights = 'bert-base-uncased'
-        tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
-        config = BertConfig(num_labels=4)
-        model = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
-
-    elif args['bert-large']:
-        pretrained_weights = 'bert-large-uncased'
-        tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
-        config = BertConfig(num_labels=4)
-        model = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
-
-    elif args['xlnet']:
-        pass
-
-    elif args['distilbert']:
-        pretrained_weights = 'distilbert-base-uncased'
-        tokenizer = DistilBertTokenizer.from_pretrained(pretrained_weights)
-        config = DistilBertConfig(num_labels=4)
-        model = DistilBertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
-
-    elif args['roberta']:
-        pretrained_weights = 'roberta-base'
-        tokenizer = RobertaTokenizer.from_pretrained(pretrained_weights)
-        config = RobertaConfig(num_labels=4)
-        model = RobertaForSequenceClassification.from_pretrained(pretrained_weights, config=config)
+    pretrained_weights = 'distilbert-base-uncased'
+    tokenizer = DistilBertTokenizer.from_pretrained(pretrained_weights)
+    config = DistilBertConfig(num_labels=4)
+    model = DistilBertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
 
     # 使用デバイスの取得
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

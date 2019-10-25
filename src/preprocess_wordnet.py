@@ -2,16 +2,20 @@
 Extract Phrase Pairs and the Relationship Label from Wordnet and Save the Dataset.
 
 Usage:
-    preprocess_wordnet.py [--max_num_char=<mc>] [--max_num_word=<mw>] [--num_unrelated=<nu>] [--num_valid=<nv>] [--num_test=<nd>]
+    preprocess_wordnet.py [--max_num_char=<mc>]
+                          [--max_num_word=<mw>]
+                          [--num_unrelated=<nu>]
+                          [--num_valid=<nv>]
+                          [--num_test=<nd>]
     preprocess_wordnet.py (-h | --help)
 
 Options:
     -h --help             show this help message and exit.
-    --max_num_char=<mc>   maximum number of char     [default: 1000].
-    --max_num_word=<mw>   maximum number of word     [default: 1000].
-    --num_unrelated=<nu>  number of unrelated data   [default: 500000].
-    --num_valid=<nv>      number of validation data  [default: 10000].
-    --num_test=<nd>       number of test data        [default: 10000].
+    --max_num_char=<mc>   maximum number of char.    [default: 1000]
+    --max_num_word=<mw>   maximum number of word.    [default: 1000]
+    --num_unrelated=<nu>  number of unrelated data.  [default: 500000]
+    --num_valid=<nv>      number of validation data. [default: 10000]
+    --num_test=<nd>       number of test data.       [default: 10000]
 '''
 
 import random

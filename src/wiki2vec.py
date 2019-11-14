@@ -1,39 +1,32 @@
 import numpy as np
-from nltk import tokenize
+import wikipedia2vec
 from wikipedia2vec import Wikipedia2Vec
-import pickle
-import pandas as pd
 
-def get_wikipedia_vecs( vocab ):
-    tokens, vecs = [], []
 
-    wiki2vec = Wikipedia2Vec.load('enwiki_20180420_500d.pkl')
 
-    for token in tokenize.word_tokenize(vocab):
+def get_wikipedia_vecs(phrase, wiki2vec):
+    entity = phrase.capitalize()
+    key = wiki2vec.get_entity(entity)
+    if key:
+        print('ue')
+        vecs  = [wiki2vec.get_entity_vector(entity)]
+        words = [entity]
 
-        key = wiki2vec.get_entity(token)
-        if key != None:
-            tokens.append(key)
-            vec = np.array(wiki2vec.get_entity_vector(token))
-            vecs.append(vec)
-            continue
+    else:
+        print('sita')
+        words = phrase.split()
+        words = [wiki2vec.get_word(w) for w in words]
+        words = [w.text if w else w for w in words]
+        vecs = [wiki2vec.get_word_vector(w) if w else np.zeros(100) for w in words]
 
-        key = wiki2vec.get_word(token)
-        if key != None:
-            tokens.append(key)
-            vec = np.array(wiki2vec.get_word_vector(token))
-            vecs.append(vec)
-            continue
-
-    return tokens, vecs
+    return words, np.stack(vecs)
 
 
 def main():
-    vocab = pd.read_pickle('../data/wordnet/vocabulary.pkl')
-    tokens, vecs = get_wikipedia_vecs(vocab)
+    wiki2vec = Wikipedia2Vec.load('../data/wiki2vec/enwiki_100d.pkl')
+    words, vecs = get_wikipedia_vecs('i have a pen .', wiki2vec)
 
-    print("vecs:",vecs[0].shape, ",tokens:",type(tokens[0]))
-    '''for t, v in zip(tokens, vecs): print(f'{t.__str__():<20} {v[:5]}')'''
+    print("vecs:",vecs.shape, ",phrases:",words)
 
 
 if __name__ == '__main__': main()

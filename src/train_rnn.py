@@ -3,19 +3,21 @@ Train model for classification of relationship between Compound words
 
 Usage:
     train_rnn.py (-h | --help)
-    train_rnn.py [--lr=<lr>]
+    train_rnn.py (word2vec | wiki2vec)
+                 [--lr=<lr>]
                  [--seq_len=<sl>]
                  [--max_epoch=<me>]
                  [--batch_size=<bs>]
                  [--num_train=<nt>]
                  [--num_valid=<nv>]
+                 [--use_entity]
 
 Options:
     -h --help          show this help message and exit.
     --lr=<lr>          leaning rate of optimizer. [default: 1e-5]
-    --seq_len=<sl>     maximum sequence length.   [default: 30]
+    --seq_len=<sl>     maximum sequence length.   [default: 20]
     --max_epoch=<me>   maximum training epoch.    [default: 20]
-    --batch_size=<bs>  size of mini-batch.        [default: 32]
+    --batch_size=<bs>  size of mini-batch.        [default: 64]
     --num_train=<nt>   number of training   data. [default: -1]
     --num_valid=<nv>   number of validation data. [default: -1]
 '''
@@ -102,7 +104,12 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # データの読み込みとデータセットの作成
-    embedding = Word2vecEmbedding(seq_len=seq_len)
+    if   args['word2vec']:
+        vec_size  = 300
+        embedding = Word2vecEmbedding(seq_len)
+    elif args['wiki2vec']:
+        vec_size  = 300
+        embedding = Wiki2vecEmbedding(seq_len, args['--use_entity'])
 
     train_dataset = WordnetDataset(mode='train', num_data=num_train, transform=embedding)
     valid_dataset = WordnetDataset(mode='valid', num_data=num_valid, transform=embedding)
@@ -110,7 +117,8 @@ def main():
     valid_loader = data.DataLoader(valid_dataset, batch_size, shuffle=True)
 
     # 学習モデル
-    model = TwinRnnClassifier(300).to(device)
+    model = TwinRnnClassifier(vec_size).to(device)
+    #model = CnnClassifier(vec_size).to(device)
 
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)

@@ -2,7 +2,7 @@ import torch
 import torch.utils.data as data
 import numpy  as np
 import pandas as pd
-
+from wikipedia2vec import Wikipedia2Vec
 
 '''
 WordnetDataset
@@ -55,6 +55,41 @@ class Word2vecEmbedding():
         vecs =  [self.w2v[w] if w in self.w2v else self.padding for w in words]
         vecs += [self.padding] * (self.seq_len - len(words))
         return np.stack(vecs).astype(np.float32)
+
+
+'''
+Wiki2vecEmbedding
+    語句のペアを学習済 Word Embedding でベクトル化する transform クラス。
+    Dataset クラスに tranform クラスとして渡される。
+    単語数が seq_len 未満の場合はゼロベクトルでパディング。
+    in  : 語句のペア
+    out : 行列 (seq_len, 300) のペア
+'''
+class Wiki2vecEmbedding():
+
+    def __init__(self, seq_len=20, use_entity=False):
+        self.wiki2vec = Wikipedia2Vec.load('../data/wiki2vec/enwiki_300d.pkl')
+        self.seq_len = seq_len
+        self.use_entity = use_entity
+        self.padding = np.zeros(300)
+
+    def __call__(self, x):
+        return self.embed_phrase(x[0]), self.embed_phrase(x[1])
+
+    def embed_phrase(self, phrase):
+        entity = self.wiki2vec.get_entity(phrase.capitalize())
+        if entity and self.use_entity:
+            vecs = [self.wiki2vec.get_entity_vector(entity.title)]
+            vecs += [self.padding] * (self.seq_len - 1)
+        else:
+            words = phrase.split()
+            words = [self.wiki2vec.get_word(w) for w in words]
+            words = [w.text if w else w for w in words]
+            vecs =  [self.wiki2vec.get_word_vector(w) if w else self.padding for w in words]
+            vecs += [self.padding] * (self.seq_len - len(words))
+
+        return np.stack(vecs).astype(np.float32)
+
 
 
 '''

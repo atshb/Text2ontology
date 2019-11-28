@@ -1,0 +1,38 @@
+{'--batch_size': '128',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '20',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '3',
+ '--use_entity': False,
+ 'wiki2vec': True,
+ 'word2vec': False}
+=========================== Epoch 01 ===========================
+|  Training    |  loss-avg : 0.005597  |  accuracy :  75.794%  |
+|  Validation  |  loss-avg : 0.005199  |  accuracy :  77.578%  |
+=========================== Epoch 02 ===========================
+|  Training    |  loss-avg : 0.005023  |  accuracy :  77.620%  |
+|  Validation  |  loss-avg : 0.005019  |  accuracy :  77.958%  |
+=========================== Epoch 03 ===========================
+|  Training    |  loss-avg : 0.004871  |  accuracy :  78.041%  |
+|  Validation  |  loss-avg : 0.004819  |  accuracy :  78.468%  |
+=========================== Epoch 04 ===========================
+|  Training    |  loss-avg : 0.004620  |  accuracy :  78.965%  |
+|  Validation  |  loss-avg : 0.004530  |  accuracy :  79.608%  |
+=========================== Epoch 05 ===========================
+|  Training    |  loss-avg : 0.004445  |  accuracy :  79.673%  |
+|  Validation  |  loss-avg : 0.004449  |  accuracy :  79.888%  |
+=========================== Epoch 06 ===========================
+|  Training    |  loss-avg : 0.004347  |  accuracy :  80.101%  |
+|  Validation  |  loss-avg : 0.004274  |  accuracy :  80.398%  |
+=========================== Epoch 07 ===========================
+|  Training    |  loss-avg : 0.004250  |  accuracy :  80.494%  |
+|  Validation  |  loss-avg : 0.004191  |  accuracy :  80.798%  |
+=========================== Epoch 08 ===========================
+|  Training    |  loss-avg : 0.004146  |  accuracy :  80.964%  |
+|  Validation  |  loss-avg : 0.004079  |  accuracy :  81.078%  |
+=========================== Epoch 09 ===========================
+|  Training    |  loss-avg : 0.004042  |  accuracy :  81.435%  |
+|  Validation  |  loss-avg : 0.004041  |  accuracy :  81.668%  |
+=========================== Epoch 10 ===========================

@@ -2,15 +2,13 @@
 Train model for classification of relationship between Compound words
 
 Usage:
-    train_rnn.py (-h | --help)
-    train_rnn.py (word2vec | wiki2vec)
-                 [--lr=<lr>]
-                 [--seq_len=<sl>]
-                 [--max_epoch=<me>]
-                 [--batch_size=<bs>]
-                 [--num_train=<nt>]
-                 [--num_valid=<nv>]
-                 [--use_entity]
+    train_bert_rnn.py (-h | --help)
+    train_bert_rnn.py [--lr=<lr>]
+                      [--seq_len=<sl>]
+                      [--max_epoch=<me>]
+                      [--batch_size=<bs>]
+                      [--num_train=<nt>]
+                      [--num_valid=<nv>]
 
 Options:
     -h --help          show this help message and exit.
@@ -22,21 +20,20 @@ Options:
     --num_valid=<nv>   number of validation data. [default: -1]
 '''
 
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from transformers import BertConfig, BertForSequenceClassification
+from transformers import BertTokenizer, BertConfig, BertModel
+
 from docopt import docopt
 from pprint import pprint
 from tqdm import tqdm
 from dataset import *
 from models_rnn import *
 
-
 '''
 '''
-def train_model(model, loss_func, optimizer, dataloader, device):
+def train_model(model, embed, loss_func, optimizer, dataloader, device):
     model.train()
 
     epoch_loss = 0
@@ -48,12 +45,14 @@ def train_model(model, loss_func, optimizer, dataloader, device):
             t = t.to(device)
             # calculate loss
             optimizer.zero_grad()
-            y = model(x_a, x_b)
+            with torch.no_grad():
+                e_a = embed(x_a)[0]
+                e_b = embed(x_b)[0]
+            y = model(e_a, e_b)
             loss = loss_func(y, t)
             _, p = torch.max(y, 1)
             # update model
             loss.backward()
-            optimizer.step()
             #
             epoch_loss += loss.cpu().item()
             epoch_accu += torch.sum(p == t).item()
@@ -64,7 +63,7 @@ def train_model(model, loss_func, optimizer, dataloader, device):
 
 '''
 '''
-def valid_model(model, loss_func, optimizer, dataloader, device):
+def valid_model(model, optimizer, dataloader, device):
     model.eval()
 
     epoch_loss = 0
@@ -76,9 +75,14 @@ def valid_model(model, loss_func, optimizer, dataloader, device):
             t = t.to(device)
             # calculate loss
             optimizer.zero_grad()
-            y = model(x_a, x_b)
+            with torch.no_grad():
+                e_a = embed(x_a)[0]
+                e_b = embed(x_b)[0]
+            y = model(e_a, e_b)
             loss = loss_func(y, t)
             _, p = torch.max(y, 1)
+            # update model
+            loss.backward()
             #
             epoch_loss += loss.cpu().item()
             epoch_accu += torch.sum(p == t).item()
@@ -94,6 +98,7 @@ def main():
     args = docopt(__doc__)
     pprint(args)
 
+    # パラメータの取得
     lr = float(args['--lr'])
     seq_len    = int(args['--seq_len'])
     max_epoch  = int(args['--max_epoch'])
@@ -103,33 +108,39 @@ def main():
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # データの読み込みとデータセットの作成
-    if   args['word2vec']:
-        vec_size  = 300
-        embedding = Word2vecEmbedding(seq_len)
-    elif args['wiki2vec']:
-        vec_size  = 300
-        embedding = Wiki2vecEmbedding(seq_len, args['--use_entity'])
+    # モデルの選択
+    vec_size = 768
+    pretrained_weights = 'bert-base-uncased'
+    tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+    bert_emb = BertModel.from_pretrained(pretrained_weights)
+    bert_emb.to(device).eval()
 
-    train_dataset = WordnetDataset(mode='train', num_data=num_train, transform=embedding)
-    valid_dataset = WordnetDataset(mode='valid', num_data=num_valid, transform=embedding)
+    model = TwinRnnClassifier(vec_size).to(device)
+    model.to(device)
+
+    # データの読み込みとデータセットの作成
+    encoder = SinglePhraseEncoder(tokenizer, seq_len)
+
+    train_dataset = WordnetDataset(mode='train', num_data=num_train, transform=encoder)
+    valid_dataset = WordnetDataset(mode='valid', num_data=num_valid, transform=encoder)
     train_loader = data.DataLoader(train_dataset, batch_size, shuffle=True)
     valid_loader = data.DataLoader(valid_dataset, batch_size, shuffle=True)
 
-    # 学習モデル
-    model = TwinRnnClassifier(vec_size).to(device)
-    #model = CnnRnnClassifier(vec_size).to(device)
-    #model = AccelerateClassifier(vec_size).to(device)
+    # 最適化法の定義
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # 学習
     for epoch in range(1, max_epoch+1):
         print('='*27 + f' Epoch {epoch:0>2} ' + '='*27)
-        loss, accu = train_model(model, loss_func, optimizer, train_loader, device)
+        # Training
+        loss, accu = train_model(model, bert_emb, loss_func, optimizer, train_loader, device)
         print(f'|  Training    |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
-        loss, accu = valid_model(model, loss_func, optimizer, valid_loader, device)
+        # Validation
+        loss, accu = valid_model(model, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
+        # 保存
+        torch.save(model.state_dict(), f'../result/bert.pkl')
 
 
 if __name__ == '__main__': main()

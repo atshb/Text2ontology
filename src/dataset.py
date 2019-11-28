@@ -131,6 +131,30 @@ class TwinPhraseEncoder():
         return torch.LongTensor(tokens), torch.LongTensor(ttypes)
 
 
+'''
+'''
+class SinglePhraseEncoder():
+
+    def __init__(self, tokenizer, seq_len=30):
+        self.seq_len = seq_len
+        self.tokenizer = tokenizer
+
+    def __call__(self, x):
+        a = self.encode(x[0])
+        b = self.encode(x[1])
+        return a, b
+
+
+    def encode(self, x):
+        # BPEでトークンに分割
+        tokens = self.tokenizer.tokenize('[CLS]' + x + '[SEP]')
+        # トークンをidに
+        tokens = self.tokenizer.convert_tokens_to_ids(tokens)
+        # テンソル化 & 最大長にあわせてパディング
+        tokens += [0] * (self.seq_len - len(tokens))
+
+        return torch.LongTensor(tokens)
+
 
 '''
 テスト用

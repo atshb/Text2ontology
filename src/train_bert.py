@@ -3,9 +3,7 @@ Train model for classification of relationship between Compound words
 
 Usage:
     train_bert.py (-h | --help)
-    train_bert.py (bert-base      | bert-large      |
-                   albert-base-v1 | albert-large-v1 |
-                   albert-base-v2 | albert-large-v2 )
+    train_bert.py <pretrained_weights>
                   [--lr=<lr>]
                   [--seq_len=<sl>]
                   [--max_epoch=<me>]
@@ -93,7 +91,8 @@ def main():
     pprint(args)
 
     # パラメータの取得
-    lr = float(args['--lr'])
+    weights    = args['<pretrained_weights>']
+    lr         = float(args['--lr'])
     seq_len    = int(args['--seq_len'])
     max_epoch  = int(args['--max_epoch'])
     batch_size = int(args['--batch_size'])
@@ -101,24 +100,18 @@ def main():
     num_valid  = int(args['--num_valid'])
 
     # 学習済みモデルの選択
-    if   args['bert-base']      : weights = 'bert-base-uncased'
-    elif args['bert-large']     : weights = 'bert-large-uncased'
-    elif args['albert-base-v1'] : weights = 'bert-base-v1'
-    elif args['albert-base-v2'] : weights = 'bert-base-v2'
-    elif args['albert-large-v1']: weights = 'bert-large-v1'
-    elif args['albert-large-v2']: weights = 'bert-large-v2'
+    weights = args['<pretrained_weights>']
 
     # モデルアーキテクチャの選択
-    if   args['bert-base'] or args['bert-large']:
+    if   weights in ['bert-base-uncased', 'bert-large-uncased']:
         tokenizer = BertTokenizer.from_pretrained(weights)
         config    = BertConfig(num_labels=4)
-        model     = BertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
+        model     = BertForSequenceClassification.from_pretrained(weights, config=config)
 
-    elif args['albert-base-v1'] or args['albert-large-v1'] or
-         args['albert-base-v2'] or args['albert-large-v2']:
-        tokenizer = AlbertTokenizer.from_pretrained(pretrained_weights)
-        config    = AlbertConfig(num_labels=4)
-        model     = AlertForSequenceClassification.from_pretrained(pretrained_weights, config=config)
+    elif weights in ['albert-base-v1', 'albert-large-v1', 'albert-base-v2', 'albert-large-v2']:
+        tokenizer = AlbertTokenizer.from_pretrained(weights)
+        config    = AlbertConfig.from_pretrained(weights, num_labels=4)
+        model     = AlbertForSequenceClassification.from_pretrained(weights, config=config)
 
     # 使用デバイスの取得
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

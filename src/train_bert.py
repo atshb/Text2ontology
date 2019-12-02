@@ -110,7 +110,9 @@ def main():
 
     elif weights == 'bert-large-uncased':
         tokenizer = BertTokenizer.from_pretrained(weights)
-        config    = BertConfig(hidden_size=1024, num_labels=4)
+        config    = BertConfig(hidden_size=1024, num_hidden_layers=24, 
+                               num_attention_heads=16, intermediate_size=4096, 
+                               num_labels=4)
         model     = BertForSequenceClassification.from_pretrained(weights, config=config)
 
     elif weights in ['albert-base-v1', 'albert-large-v1', 'albert-base-v2', 'albert-large-v2']:

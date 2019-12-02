@@ -103,9 +103,14 @@ def main():
     weights = args['<pretrained_weights>']
 
     # モデルアーキテクチャの選択
-    if   weights in ['bert-base-uncased', 'bert-large-uncased']:
+    if   weights == 'bert-base-uncased':
         tokenizer = BertTokenizer.from_pretrained(weights)
         config    = BertConfig(num_labels=4)
+        model     = BertForSequenceClassification.from_pretrained(weights, config=config)
+
+    elif weights == 'bert-large-uncased':
+        tokenizer = BertTokenizer.from_pretrained(weights)
+        config    = BertConfig(hidden_size=1024, num_labels=4)
         model     = BertForSequenceClassification.from_pretrained(weights, config=config)
 
     elif weights in ['albert-base-v1', 'albert-large-v1', 'albert-base-v2', 'albert-large-v2']:

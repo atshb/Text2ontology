@@ -12,7 +12,7 @@ Usage:
 
 Options:
     -h --help          show this help message and exit.
-    --lr=<lr>          leaning rate of optimizer. [default: 1e-4]
+    --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
     --seq_len=<sl>     maximum sequence length.   [default: 20]
     --max_epoch=<me>   maximum training epoch.    [default: 20]
     --batch_size=<bs>  size of mini-batch.        [default: 64]
@@ -23,7 +23,7 @@ Options:
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from transformers import BertTokenizer, BertModel
+from transformers import AlbertTokenizer, AlbertModel
 
 from docopt import docopt
 from pprint import pprint
@@ -81,7 +81,7 @@ def valid_model(model, embed, loss_func, optimizer, dataloader, device):
             y = model(e_a, e_b)
             loss = loss_func(y, t)
             _, p = torch.max(y, 1)
-            #
+
             epoch_loss += loss.cpu().item()
             epoch_accu += torch.sum(p == t).item()
 
@@ -108,10 +108,10 @@ def main():
 
     # モデルの選択
     vec_size = 768
-    pretrained_weights = 'bert-base-uncased'
-    tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
-    bert_emb = BertModel.from_pretrained(pretrained_weights)
-    bert_emb.to(device).eval()
+    pretrained_weights = 'albert-base-v2'
+    tokenizer = AlbertTokenizer.from_pretrained(pretrained_weights)
+    albert_emb = AlbertModel.from_pretrained(pretrained_weights)
+    albert_emb.to(device).eval()
 
     model = TwinRnnClassifier(vec_size).to(device)
     model.to(device)
@@ -132,10 +132,10 @@ def main():
     for epoch in range(1, max_epoch+1):
         print('='*27 + f' Epoch {epoch:0>2} ' + '='*27)
         # Training
-        loss, accu = train_model(model, bert_emb, loss_func, optimizer, train_loader, device)
+        loss, accu = train_model(model, albert_emb, loss_func, optimizer, train_loader, device)
         print(f'|  Training    |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
         # Validation
-        loss, accu = valid_model(model, bert_emb, loss_func, optimizer, valid_loader, device)
+        loss, accu = valid_model(model, albert_emb, loss_func, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
         # 保存
         torch.save(model.state_dict(), f'../result/bert.pkl')

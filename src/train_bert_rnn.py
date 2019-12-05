@@ -12,7 +12,7 @@ Usage:
 
 Options:
     -h --help          show this help message and exit.
-    --lr=<lr>          leaning rate of optimizer. [default: 1e-4]
+    --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
     --seq_len=<sl>     maximum sequence length.   [default: 20]
     --max_epoch=<me>   maximum training epoch.    [default: 20]
     --batch_size=<bs>  size of mini-batch.        [default: 64]
@@ -53,6 +53,7 @@ def train_model(model, embed, loss_func, optimizer, dataloader, device):
             _, p = torch.max(y, 1)
             # update model
             loss.backward()
+            optimizer.step()
             #
             epoch_loss += loss.cpu().item()
             epoch_accu += torch.sum(p == t).item()
@@ -114,10 +115,9 @@ def main():
     bert_emb.to(device).eval()
 
     model = TwinRnnClassifier(vec_size).to(device)
-    model.to(device)
 
     # データの読み込みとデータセットの作成
-    encoder = SinglePhraseEncoder(tokenizer, seq_len)
+    encoder = SeparatePhraseEncoder(tokenizer, seq_len)
 
     train_dataset = WordnetDataset(mode='train', num_data=num_train, transform=encoder)
     valid_dataset = WordnetDataset(mode='valid', num_data=num_valid, transform=encoder)

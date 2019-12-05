@@ -53,6 +53,7 @@ def train_model(model, embed, loss_func, optimizer, dataloader, device):
             _, p = torch.max(y, 1)
             # update model
             loss.backward()
+            optimizer.step()
             #
             epoch_loss += loss.cpu().item()
             epoch_accu += torch.sum(p == t).item()

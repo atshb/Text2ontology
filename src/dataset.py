@@ -91,21 +91,19 @@ class Wiki2vecEmbedding():
         return np.stack(vecs).astype(np.float32)
 
 
-
 '''
-TwinPhraseEncoder
+ConcatPhraseEncoder
     BERTに二つの文を単一入力として渡すための transform クラス。
     各文は Byte Pair Encoding(BPE) によりサブワードに分割され、さらにIDに変換される。
     また、二つの文を区別するため、トークンタイプ行列とセットで出力。
 '''
-class TwinPhraseEncoder():
+class ConcatPhraseEncoder():
 
     def __init__(self, tokenizer, seq_len=50):
         self.seq_len = seq_len
         self.tokenizer = tokenizer
 
     def __call__(self, x):
-        '''
         # BPEでトークンに分割
         a = self.tokenizer.tokenize('[CLS]' + x[0] + '[SEP]')
         b = self.tokenizer.tokenize(          x[1] + '[SEP]')
@@ -115,16 +113,6 @@ class TwinPhraseEncoder():
         # トークンをidに
         tokens = self.tokenizer.convert_tokens_to_ids(tokens)
         # テンソル化 & 最大長にあわせてパディング
-        tokens = torch.LongTensor(tokens + [0] * (self.seq_len - len(tokens)))
-        ttypes = torch.LongTensor(ttypes + [0] * (self.seq_len - len(ttypes)))
-
-        return tokens, ttypes
-        '''
-        encoded = self.tokenizer.encode_plus(x[0], x[1], max_length=self.seq_len)
-        #
-        tokens = encoded['input_ids']
-        ttypes = encoded['token_type_ids']
-        # テンソル化 & 最大長にあわせてパディング
         tokens += [0] * (self.seq_len - len(tokens))
         ttypes += [0] * (self.seq_len - len(ttypes))
 
@@ -132,45 +120,36 @@ class TwinPhraseEncoder():
 
 
 '''
+SeparatePhraseEncoder
+    BERTに二つの文を別々の入力として渡すための transform クラス。
+    各文は Byte Pair Encoding(BPE) によりサブワードに分割され、さらにIDに変換される。
+    出力はIDのリストになった入力文Aと入力文B。
 '''
-class SinglePhraseEncoder():
+class SeparatePhraseEncoder():
 
-    def __init__(self, tokenizer, seq_len=30):
+    def __init__(self, tokenizer, seq_len=25):
         self.seq_len = seq_len
         self.tokenizer = tokenizer
 
     def __call__(self, x):
-        a = self.encode(x[0])
-        b = self.encode(x[1])
-        return a, b
-
-
-    def encode(self, x):
         # BPEでトークンに分割
-        tokens = self.tokenizer.tokenize('[CLS]' + x + '[SEP]')
+        a = self.tokenizer.tokenize('[CLS]' + x[0] + '[SEP]')
+        b = self.tokenizer.tokenize('[CLS]' + x[1] + '[SEP]')
         # トークンをidに
-        tokens = self.tokenizer.convert_tokens_to_ids(tokens)
+        a = self.tokenizer.convert_tokens_to_ids(a)
+        b = self.tokenizer.convert_tokens_to_ids(b)
         # テンソル化 & 最大長にあわせてパディング
-        tokens += [0] * (self.seq_len - len(tokens))
+        a += [0] * (self.seq_len - len(a))
+        b += [0] * (self.seq_len - len(b))
 
-        return torch.LongTensor(tokens)
+        return torch.LongTensor(a), torch.LongTensor(b)
 
 
 '''
 テスト用
 '''
 def test():
-    from transformers import BertTokenizer, RobertaTokenizer
-
-    # train = data.DataLoader(WordnetDataset('train', num_data=4, transform=transform), batch_size=2)
-
-    #tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
-    transform = TwinPhraseEncoder(tokenizer, seq_len=15)
-
-    encoded = transform(('I have a pen', 'I have an apple'),)
-    print(encoded[0])
-    print(encoded[1])
+    pass
 
 
 if __name__ == '__main__': test()

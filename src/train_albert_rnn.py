@@ -13,7 +13,7 @@ Usage:
 Options:
     -h --help          show this help message and exit.
     --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
-    --seq_len=<sl>     maximum sequence length.   [default: 20]
+    --seq_len=<sl>     maximum sequence length.   [default: 30]
     --max_epoch=<me>   maximum training epoch.    [default: 20]
     --batch_size=<bs>  size of mini-batch.        [default: 64]
     --num_train=<nt>   number of training   data. [default: -1]
@@ -109,7 +109,7 @@ def main():
 
     # モデルの選択
     vec_size = 768
-    pretrained_weights = 'albert-base-v2'
+    pretrained_weights = 'albert-base-v1'
     tokenizer = AlbertTokenizer.from_pretrained(pretrained_weights)
     albert_emb = AlbertModel.from_pretrained(pretrained_weights)
     albert_emb.to(device).eval()
@@ -118,7 +118,7 @@ def main():
     model.to(device)
 
     # データの読み込みとデータセットの作成
-    encoder = SinglePhraseEncoder(tokenizer, seq_len)
+    encoder = SeparatePhraseEncoder(tokenizer, seq_len)
 
     train_dataset = WordnetDataset(mode='train', num_data=num_train, transform=encoder)
     valid_dataset = WordnetDataset(mode='valid', num_data=num_valid, transform=encoder)

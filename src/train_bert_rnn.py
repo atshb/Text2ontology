@@ -14,7 +14,7 @@ Options:
     -h --help          show this help message and exit.
     --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
     --seq_len=<sl>     maximum sequence length.   [default: 20]
-    --max_epoch=<me>   maximum training epoch.    [default: 20]
+    --max_epoch=<me>   maximum training epoch.    [default: 30]
     --batch_size=<bs>  size of mini-batch.        [default: 64]
     --num_train=<nt>   number of training   data. [default: -1]
     --num_valid=<nv>   number of validation data. [default: -1]

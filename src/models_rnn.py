@@ -136,7 +136,7 @@ class ParallelClassifier(nn.Module):
 
 '''
 '''
-class SeriesClassifer(nn.Module):
+class SeriesClassifier(nn.Module):
 
     def __init__(self, seq_len, f_size, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         super(SeriesClassifier, self).__init__()

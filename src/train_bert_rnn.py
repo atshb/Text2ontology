@@ -3,7 +3,8 @@ Train model for classification of relationship between Compound words
 
 Usage:
     train_bert_rnn.py (-h | --help)
-    train_bert_rnn.py [--lr=<lr>]
+    train_bert_rnn.py (rnn | cnn | parallel)
+                      [--lr=<lr>]
                       [--seq_len=<sl>]
                       [--max_epoch=<me>]
                       [--batch_size=<bs>]
@@ -114,8 +115,12 @@ def main():
     bert_emb = BertModel.from_pretrained(pretrained_weights)
     bert_emb.to(device).eval()
 
-    model = TwinRnnClassifier(vec_size).to(device)
-
+    # 学習モデル
+    if   args['rnn']    : model = RnnClassifier(vec_size)
+    elif args['cnn']    : model = CnnClassifier(vec_size)
+    elif args['parallel']: model = ParallelClassifier(vec_size)
+    model.to(device)
+    
     # データの読み込みとデータセットの作成
     encoder = SeparatePhraseEncoder(tokenizer, seq_len)
 

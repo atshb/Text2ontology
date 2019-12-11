@@ -4,6 +4,7 @@ Train model for classification of relationship between Compound words
 Usage:
     train_rnn.py (-h | --help)
     train_rnn.py (word2vec | wiki2vec)
+                 (rnn | cnn | parallel)
                  [--lr=<lr>]
                  [--seq_len=<sl>]
                  [--max_epoch=<me>]
@@ -15,7 +16,7 @@ Usage:
 Options:
     -h --help          show this help message and exit.
     --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
-    --seq_len=<sl>     maximum sequence length.   [default: 20]
+    --seq_len=<sl>     maximum sequence length.   [default: 30]
     --max_epoch=<me>   maximum training epoch.    [default: 20]
     --batch_size=<bs>  size of mini-batch.        [default: 64]
     --num_train=<nt>   number of training   data. [default: -1]
@@ -117,9 +118,12 @@ def main():
     valid_loader = data.DataLoader(valid_dataset, batch_size, shuffle=True)
 
     # 学習モデル
-    model = TwinRnnClassifier(vec_size).to(device)
-    #model = CnnRnnClassifier(vec_size).to(device)
-    #model = AccelerateClassifier(vec_size).to(device)
+    if   args['rnn']    : model = RnnClassifier(vec_size)
+    elif args['cnn']    : model = CnnClassifier(vec_size)
+    elif args['parallel']: model = ParallelClassifier(vec_size)
+    model.to(device)
+
+    # 学習設定
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 

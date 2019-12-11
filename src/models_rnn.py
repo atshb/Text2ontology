@@ -140,52 +140,45 @@ class SeriesClassifier(nn.Module):
 
     def __init__(self, seq_len, f_size, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         super(SeriesClassifier, self).__init__()
-        # input size : [50, 768, 1]
-        self.dropout1 = nn.Dropout(p=0.2)
-        self.conv1 = nn.Conv1d(in_channels=seq_len, out_channels=128, kernel_size=2, stride=1)
-        # conv1 output size : [128, 767]
-        self.maxpool1 = nn.MaxPool1d(kernel_size=1, stride=1, padding=0)
-        # maxpool1 output size: [128, 767]
-        self.dropout2 = nn.Dropout(p=0.2)
-
-        self.conv2 = nn.Conv1d(in_channels=128, out_channels=90, kernel_size=1, stride=1)
-        # conv2 output size : [90, 767, 1]
-        self.maxpool2 = nn.MaxPool1d(kernel_size=2, stride=1, padding=0)
-        # maxpool2 output size : [90, 766]
-
+        self.h_size = h_size
+        
+        self.cnn = nn.Sequential(
+            nn.Conv1d(in_channels=seq_len, out_channels=128, kernel_size=2, stride=1),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.2),
+            nn.MaxPool1d(kernel_size=1, stride=1, padding=0),
+            nn.Conv1d(in_channels=128, out_channels=90, kernel_size=1, stride=1),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.2),
+            nn.MaxPool1d(kernel_size=2, stride=1, padding=0),
+        )
         # bidiractional = True でBi-LSTMにできる
         self.lstm = nn.LSTM(input_size=766, hidden_size = h_size, batch_first=True, bidirectional = False)
-        self.dence = nn.Sequential(
-            # MaxPool
-            # hidden_size
-            nn.Linear( 90 * hidden_lstm_size,2),
-
+        self.classifier = nn.Sequential(
+            nn.Linear(2*h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
+            nn.Linear(  h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
+            nn.Linear(  h_size, y_size),
         )
 
-    def forward(self, x):
-        # size changes from (50,768,1) to (128,766, 1)
-        x = F.relu(self.conv1(x))
+    def forward(self, x_a, x_b):
+        #
+        cnn_a = self.cnn(x_a)
+        _batch_size = cnn_a.size(0)
+        out_a, (h_a,c_a) = self.lstm(cnn_a)
 
-        # size changes from (128,766, 1) to [128,766,1]
-        x = self.maxpool1(x)
-
-        # size changes from (128,766,1) to (90,766, 1)
-        x = F.relu(self.conv2(x))
-
-        # size changes from (90, 766) to (90, 766)
-        x = self.maxpool2(x)
-
-        _batch_size = x.size(0)
-        # print(_batch_size)
-
-        out, hn = self.lstm(x)
-        # print('out shape : ',out.shape)
-        #print(hn.size(0))
+        #
+        cnn_b = self.cnn(x_b)
+        _batch_size = cnn_b.size(0)
+        out_b, (h_b, c_b) = self.lstm(cnn_b)
 
         # Flatten
-        out = out.reshape(_batch_size,90*hidden_lstm_size)
+        out_a = h_a.reshape(_batch_size,self.h_size)
+        out_b = h_b.reshape(_batch_size,self.h_size)
+        # concat
+        out = torch.cat((out_a, out_b), dim=1)
+        
         #全結合層
-        out = self.dence(out)
+        out = self.classifier(out)
 
         return out
 

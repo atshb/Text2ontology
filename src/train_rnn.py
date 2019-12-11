@@ -4,7 +4,7 @@ Train model for classification of relationship between Compound words
 Usage:
     train_rnn.py (-h | --help)
     train_rnn.py (word2vec | wiki2vec)
-                 (rnn | cnn | parallel)
+                 (rnn | cnn | series | parallel)
                  [--lr=<lr>]
                  [--seq_len=<sl>]
                  [--max_epoch=<me>]
@@ -120,6 +120,7 @@ def main():
     # 学習モデル
     if   args['rnn']    : model = RnnClassifier(vec_size)
     elif args['cnn']    : model = CnnClassifier(vec_size)
+    elif args['series']  : model = SeriesClassifer(seq_len, vec_size)
     elif args['parallel']: model = ParallelClassifier(vec_size)
     model.to(device)
 

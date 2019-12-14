@@ -128,7 +128,7 @@ class SeriesClassifier(nn.Module):
     def __init__(self, f_size, seq_len, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         super(SeriesClassifier, self).__init__()
         self.h_size = h_size
-        
+
         self.cnn = nn.Sequential(
             nn.Conv1d(in_channels=seq_len, out_channels=128, kernel_size=2, stride=1),
             nn.ReLU(inplace=True),
@@ -139,8 +139,9 @@ class SeriesClassifier(nn.Module):
             nn.Dropout(p=0.2),
             nn.MaxPool1d(kernel_size=2, stride=1, padding=0),
         )
+        i_size = f_size - 2
         # bidiractional = True でBi-LSTMにできる
-        self.lstm = nn.LSTM(input_size=766, hidden_size = h_size, batch_first=True, bidirectional = False)
+        self.lstm = nn.LSTM(input_size=i_size, hidden_size=h_size, batch_first=True, bidirectional = False)
         self.classifier = nn.Sequential(
             nn.Linear(2*h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
             nn.Linear(  h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
@@ -163,7 +164,7 @@ class SeriesClassifier(nn.Module):
         out_b = h_b.reshape(_batch_size,self.h_size)
         # concat
         out = torch.cat((out_a, out_b), dim=1)
-        
+
         #全結合層
         out = self.classifier(out)
 

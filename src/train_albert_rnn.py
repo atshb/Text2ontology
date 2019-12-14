@@ -118,7 +118,7 @@ def main():
     # 学習モデル
     if   args['rnn']    : model = RnnClassifier(vec_size)
     elif args['cnn']    : model = CnnClassifier(vec_size)
-    elif args['series']  : model = SeriesClassifer(seq_len, vec_size)
+    elif args['series']  : model = SeriesClassifier(seq_len, vec_size)
     elif args['parallel']: model = ParallelClassifier(vec_size)
     model.to(device)
 

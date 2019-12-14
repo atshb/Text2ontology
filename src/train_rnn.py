@@ -118,10 +118,10 @@ def main():
     valid_loader = data.DataLoader(valid_dataset, batch_size, shuffle=True)
 
     # 学習モデル
-    if   args['rnn']    : model = RnnClassifier(vec_size)
-    elif args['cnn']    : model = CnnClassifier(vec_size)
-    elif args['series']  : model = SeriesClassifier(seq_len, vec_size)
-    elif args['parallel']: model = ParallelClassifier(vec_size)
+    if   args['rnn']     : model = RnnClassifier(vec_size)
+    elif args['cnn']     : model = CnnClassifier(seq_len)
+    elif args['series']  : model = SeriesClassifier(vec_size, seq_len)
+    elif args['parallel']: model = ParallelClassifier(vec_size, seq_len)
     model.to(device)
 
     # 学習設定

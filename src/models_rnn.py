@@ -8,9 +8,6 @@ class RnnBlock(nn.Module):
 
     def __init__(self, f_size, h_size, num_cell, drop_rate):
         super(RnnBlock, self).__init__()
-        #
-        self.h_size   = h_size
-        self.num_cell = num_cell
         # ドロップアウトは最終層以外に適応されるので一層の場合は必要なし。
         drop_rate = 0 if num_cell == 1 else drop_rate
         self.lstm = nn.LSTM(f_size, h_size, num_layers=num_cell,
@@ -18,40 +15,28 @@ class RnnBlock(nn.Module):
                             bidirectional=True)
 
     def forward(self, x):
-        _, (h, _) = self.lstm(x)
-        # RNNのレイヤー数が１でない場合は最終層の出力だけ利用
-        if self.num_cell != 1: h = h.view(self.num_cell, 2, -1, self.h_size)[-1]
-        h = torch.cat([e for e in h], dim=1)
-        return h
+        x, _ = self.lstm(x)
+        return x[:,-1]
 
 
 '''
 '''
 class CnnBlock(nn.Module):
 
-    def __init__(self):
+    def __init__(self, seq_len):
         super(CnnBlock, self).__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d( 1,  8, kernel_size=16, stride=(1, 4), padding=8),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=(1, 2)),
-            nn.Conv2d( 8, 16, kernel_size= 8,                padding=4),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=(1, 2)),
-            nn.Conv2d(16, 32, kernel_size= 4,                padding=2),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 64, kernel_size= 2,                padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=(1, 2)),
+        self.convs = nn.Sequential(
+            nn.Conv1d(seq_len, seq_len, kernel_size=3, padding=1), nn.ReLU(inplace=True),
+            nn.Conv1d(seq_len, seq_len, kernel_size=3, padding=1), nn.ReLU(inplace=True),
+            nn.Conv1d(seq_len, seq_len, kernel_size=3, padding=1), nn.ReLU(inplace=True),
+            nn.Conv1d(seq_len, seq_len, kernel_size=3, padding=1), nn.ReLU(inplace=True),
         )
-        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
 
     def forward(self, x):
-        x = x.unsqueeze(1)
-        x = self.features(x)
-        x = self.avgpool(x)
+        x = self.convs(x)
         x = torch.flatten(x, 1)
         return x
+
 
 '''
 '''
@@ -59,15 +44,16 @@ class RnnClassifier(nn.Module):
 
     def __init__(self, f_size, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         super(RnnClassifier, self).__init__()
-        # BiLSTM
+        # RNN Block
         self.rnn_a = RnnBlock(f_size, h_size, num_cell, drop_rate)
         self.rnn_b = RnnBlock(f_size, h_size, num_cell, drop_rate)
         # MLP
+        x_size = 4 * h_size
         self.classifier = nn.Sequential(
             # bidirectional かつ 二つの入力なので hidden size は4倍
-            nn.Linear(4*h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
-            nn.Linear(  h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
-            nn.Linear(  h_size, y_size),
+            nn.Linear(x_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
+            nn.Linear(h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
+            nn.Linear(h_size, y_size),
         )
 
     def forward(self, x_a, x_b):
@@ -82,16 +68,17 @@ class RnnClassifier(nn.Module):
 '''
 class CnnClassifier(nn.Module):
 
-    def __init__(self, f_size, h_size=300, y_size=4, drop_rate=0.2):
+    def __init__(self, f_size, seq_len, h_size=300, y_size=4, drop_rate=0.2):
         super(CnnClassifier, self).__init__()
-        #
-        self.cnn_a = CnnBlock()
-        self.cnn_b = CnnBlock()
+        # CNN Block
+        self.cnn_a = CnnBlock(seq_len)
+        self.cnn_b = CnnBlock(seq_len)
         # MLP
+        x_size = 2 * seq_len * f_size
         self.classifier = nn.Sequential(
-            nn.Linear(2*64*6*6, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
-            nn.Linear(  h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
-            nn.Linear(  h_size, y_size),
+            nn.Linear(x_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
+            nn.Linear(h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
+            nn.Linear(h_size, y_size),
         )
 
     def forward(self, x_a, x_b):
@@ -106,16 +93,16 @@ class CnnClassifier(nn.Module):
 '''
 class ParallelClassifier(nn.Module):
 
-    def __init__(self, f_size, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
+    def __init__(self, f_size, seq_len, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         super(ParallelClassifier, self).__init__()
         #
-        self.cnn_a = CnnBlock()
-        self.cnn_b = CnnBlock()
+        self.cnn_a = CnnBlock(seq_len)
+        self.cnn_b = CnnBlock(seq_len)
         #
         self.rnn_a = RnnBlock(f_size, h_size, num_cell, drop_rate)
         self.rnn_b = RnnBlock(f_size, h_size, num_cell, drop_rate)
         # MLP
-        in_size = 4*h_size + 2*64*6*6
+        in_size = (4*h_size) + (2*seq_len*f_size)
         self.classifier = nn.Sequential(
             nn.Linear(in_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
             nn.Linear( h_size, h_size), nn.ReLU(inplace=True), nn.Dropout(drop_rate),
@@ -138,7 +125,7 @@ class ParallelClassifier(nn.Module):
 '''
 class SeriesClassifier(nn.Module):
 
-    def __init__(self, seq_len, f_size, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
+    def __init__(self, f_size, seq_len, h_size=300, y_size=4, num_cell=2, drop_rate=0.2):
         super(SeriesClassifier, self).__init__()
         self.h_size = h_size
         

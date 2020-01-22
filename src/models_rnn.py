@@ -62,6 +62,8 @@ class RnnClassifier(nn.Module):
         h = torch.cat((h_a, h_b), dim=1)
         y = self.classifier(h)
         return y
+'''
+'''
 
 
 '''

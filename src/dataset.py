@@ -123,26 +123,33 @@ class ConcatPhraseEncoder():
 SeparatePhraseEncoder
     BERTに二つの文を別々の入力として渡すための transform クラス。
     各文は Byte Pair Encoding(BPE) によりサブワードに分割され、さらにIDに変換される。
-    出力はIDのリストになった入力文Aと入力文B。
+    出力は分割された文章とIDのリストになった入力文Aと入力文B。
 '''
 class SeparatePhraseEncoder():
 
-    def __init__(self, tokenizer, seq_len=25):
+    def __init__(self, tokenizer, seq_len=25, with_phrase=False):
         self.seq_len = seq_len
         self.tokenizer = tokenizer
+        self.with_phrase = with_phrase
 
     def __call__(self, x):
         # BPEでトークンに分割
         a = self.tokenizer.tokenize('[CLS]' + x[0] + '[SEP]')
         b = self.tokenizer.tokenize('[CLS]' + x[1] + '[SEP]')
         # トークンをidに
-        a = self.tokenizer.convert_tokens_to_ids(a)
-        b = self.tokenizer.convert_tokens_to_ids(b)
+        a_id = self.tokenizer.convert_tokens_to_ids(a)
+        b_id = self.tokenizer.convert_tokens_to_ids(b)
         # テンソル化 & 最大長にあわせてパディング
-        a += [0] * (self.seq_len - len(a))
-        b += [0] * (self.seq_len - len(b))
+        a += ['[PAD]'] * (self.seq_len - len(a))
+        b += ['[PAD]'] * (self.seq_len - len(b))
+        a_id += [0] * (self.seq_len - len(a_id))
+        b_id += [0] * (self.seq_len - len(b_id))
+        #
+        a_id = torch.LongTensor(a_id)
+        b_id = torch.LongTensor(b_id)
 
-        return torch.LongTensor(a), torch.LongTensor(b)
+        if self.with_phrase: return a_id, b_id, a, b
+        else               : return a_id, b_id
 
 
 '''

@@ -27,7 +27,6 @@ Options:
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from transformers import BertConfig, BertForSequenceClassification
 from docopt import docopt
 from pprint import pprint
 from tqdm import tqdm
@@ -135,6 +134,6 @@ def main():
         print(f'|  Training    |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
         loss, accu = valid_model(model, loss_func, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
-
+        torch.save(model.state_dict(), f'../result/word2vec.pkl')
 
 if __name__ == '__main__': main()

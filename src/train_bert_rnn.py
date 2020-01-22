@@ -14,8 +14,8 @@ Usage:
 Options:
     -h --help          show this help message and exit.
     --lr=<lr>          leaning rate of optimizer. [default: 1e-3]
-    --seq_len=<sl>     maximum sequence length.   [default: 20]
-    --max_epoch=<me>   maximum training epoch.    [default: 30]
+    --seq_len=<sl>     maximum sequence length.   [default: 3--0]
+    --max_epoch=<me>   maximum training epoch.    [default: 20]
     --batch_size=<bs>  size of mini-batch.        [default: 64]
     --num_train=<nt>   number of training   data. [default: -1]
     --num_valid=<nv>   number of validation data. [default: -1]
@@ -144,7 +144,7 @@ def main():
         loss, accu = valid_model(model, bert_emb, loss_func, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
         # 保存
-        torch.save(model.state_dict(), f'../result/bert.pkl')
+        torch.save(model.state_dict(), f'../result/bert_comp.pkl')
 
 
 if __name__ == '__main__': main()

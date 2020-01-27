@@ -17,7 +17,7 @@ Options:
     --num_valid=<nv>      number of validation data. [default: 10000]
     --num_test=<nd>       number of test data.       [default: 10000]
 '''
-
+import os
 import random
 import pandas as pd
 from nltk.corpus import wordnet as wn
@@ -26,7 +26,10 @@ from collections import Counter
 
 # 出力結果が毎回同じになるようにがseed値は固定
 random.seed(128)
+
+# 保存先
 dir = '../data/wordnet/'
+os.makedirs(dir, exist_ok=True)
 
 # 引数の取得
 args = docopt(__doc__)
@@ -91,7 +94,7 @@ print('num of unrelated pairs', len(unrelated))
 dataset = synonyms + sup_subs + sub_sups + unrelated
 random.shuffle(dataset)
 
-print(dataset[:10])
+# print(dataset[:10])
 
 ## トレーニング用とテスト用に分割
 num_train = len(dataset) - (num_valid + num_test)

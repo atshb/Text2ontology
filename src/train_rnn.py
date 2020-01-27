@@ -3,7 +3,8 @@ Train model for classification of relationship between Compound words
 
 Usage:
     train_rnn.py (-h | --help)
-    train_rnn.py [--lr=<lr>]
+    train_rnn.py [--dir_name=<dn>]
+                 [--lr=<lr>]
                  [--seq_len=<sl>]
                  [--max_epoch=<me>]
                  [--batch_size=<bs>]
@@ -12,19 +13,20 @@ Usage:
 
 Options:
     -h --help          show this help message and exit.
-    --lr=<lr>          leaning rate of optimizer. [default: 1e-5]
-    --seq_len=<sl>     maximum sequence length.   [default: 30]
-    --max_epoch=<me>   maximum training epoch.    [default: 20]
-    --batch_size=<bs>  size of mini-batch.        [default: 32]
-    --num_train=<nt>   number of training   data. [default: -1]
-    --num_valid=<nv>   number of validation data. [default: -1]
+    --dir_name=<dn>    Destination directory name. [default: rnn]
+    --lr=<lr>          leaning rate of optimizer.  [default: 1e-5]
+    --seq_len=<sl>     maximum sequence length.    [default: 30]
+    --max_epoch=<me>   maximum training epoch.     [default: 20]
+    --batch_size=<bs>  size of mini-batch.         [default: 32]
+    --num_train=<nt>   number of training   data.  [default: -1]
+    --num_valid=<nv>   number of validation data.  [default: -1]
 '''
 
-
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from transformers import BertConfig, BertForSequenceClassification
+from torch.utils.tensorboard import SummaryWriter
 from docopt import docopt
 from pprint import pprint
 from tqdm import tqdm
@@ -92,6 +94,7 @@ def main():
     args = docopt(__doc__)
     pprint(args)
 
+    dir_name = args['--dir_name']
     lr = float(args['--lr'])
     seq_len    = int(args['--seq_len'])
     max_epoch  = int(args['--max_epoch'])
@@ -115,13 +118,35 @@ def main():
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
+    # 保存用ディレクトリの作成
+    log_dir   = f'../logs/{dir_name}'
+    model_dir = f'../models/{dir_name}'
+    os.makedirs(log_dir  , exist_ok=True)
+    os.makedirs(model_dir, exist_ok=True)
+
+    # 学習ログの記録（TensorBoard）
+    writer = SummaryWriter(log_dir=log_dir)
+
     # 学習
     for epoch in range(1, max_epoch+1):
         print('='*27 + f' Epoch {epoch:0>2} ' + '='*27)
+
+        # Training
         loss, accu = train_model(model, loss_func, optimizer, train_loader, device)
         print(f'|  Training    |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
+        writer.add_scalar('train/loss', loss, epoch)
+        writer.add_scalar('train/accu', accu, epoch)
+
+        # Validation
         loss, accu = valid_model(model, loss_func, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
+        writer.add_scalar('valid/loss', loss, epoch)
+        writer.add_scalar('valid/accu', accu, epoch)
+
+        # モデルの保存
+        torch.save(model.state_dict(), f'{model_dir}/epoch-{epoch:0>2}.pkl')
+
+    write.close()
 
 
 if __name__ == '__main__': main()

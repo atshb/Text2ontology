@@ -1,0 +1,80 @@
+{'--batch_size': '32',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'bert-base-uncased'}
+=========================== Epoch 01 ===========================
+|  Training    |  loss-avg : 0.013028  |  accuracy :  83.975%  |
+|  Validation  |  loss-avg : 0.007836  |  accuracy :  90.719%  |
+=========================== Epoch 02 ===========================
+|  Training    |  loss-avg : 0.006766  |  accuracy :  92.041%  |
+|  Validation  |  loss-avg : 0.005391  |  accuracy :  94.029%  |
+=========================== Epoch 03 ===========================
+|  Training    |  loss-avg : 0.004232  |  accuracy :  95.135%  |
+|  Validation  |  loss-avg : 0.004117  |  accuracy :  95.530%  |
+=========================== Epoch 04 ===========================
+|  Training    |  loss-avg : 0.002813  |  accuracy :  96.795%  |
+|  Validation  |  loss-avg : 0.003552  |  accuracy :  96.420%  |
+=========================== Epoch 05 ===========================
+|  Training    |  loss-avg : 0.001991  |  accuracy :  97.773%  |
+|  Validation  |  loss-avg : 0.003438  |  accuracy :  96.820%  |
+=========================== Epoch 06 ===========================
+|  Training    |  loss-avg : 0.001518  |  accuracy :  98.295%  |
+|  Validation  |  loss-avg : 0.003192  |  accuracy :  97.240%  |
+=========================== Epoch 07 ===========================
+|  Training    |  loss-avg : 0.001214  |  accuracy :  98.632%  |
+|  Validation  |  loss-avg : 0.003004  |  accuracy :  97.410%  |
+=========================== Epoch 08 ===========================
+|  Training    |  loss-avg : 0.001020  |  accuracy :  98.858%  |
+|  Validation  |  loss-avg : 0.003170  |  accuracy :  97.450%  |
+=========================== Epoch 09 ===========================
+|  Training    |  loss-avg : 0.000879  |  accuracy :  99.002%  |
+|  Validation  |  loss-avg : 0.002807  |  accuracy :  97.720%  |
+=========================== Epoch 10 ===========================
+|  Training    |  loss-avg : 0.000768  |  accuracy :  99.117%  |
+|  Validation  |  loss-avg : 0.002613  |  accuracy :  97.870%  |
+=========================== Epoch 11 ===========================
+|  Training    |  loss-avg : 0.000690  |  accuracy :  99.177%  |
+|  Validation  |  loss-avg : 0.002641  |  accuracy :  97.980%  |
+=========================== Epoch 12 ===========================
+|  Training    |  loss-avg : 0.000616  |  accuracy :  99.251%  |
+|  Validation  |  loss-avg : 0.002991  |  accuracy :  97.760%  |
+=========================== Epoch 13 ===========================
+|  Training    |  loss-avg : 0.000572  |  accuracy :  99.304%  |
+|  Validation  |  loss-avg : 0.002935  |  accuracy :  97.840%  |
+=========================== Epoch 14 ===========================
+|  Training    |  loss-avg : 0.000529  |  accuracy :  99.336%  |
+|  Validation  |  loss-avg : 0.003043  |  accuracy :  97.890%  |
+=========================== Epoch 15 ===========================
+|  Training    |  loss-avg : 0.000498  |  accuracy :  99.383%  |
+|  Validation  |  loss-avg : 0.002879  |  accuracy :  98.090%  |
+=========================== Epoch 16 ===========================
+|  Training    |  loss-avg : 0.000465  |  accuracy :  99.403%  |
+|  Validation  |  loss-avg : 0.002853  |  accuracy :  98.040%  |
+=========================== Epoch 17 ===========================
+|  Training    |  loss-avg : 0.000444  |  accuracy :  99.433%  |
+|  Validation  |  loss-avg : 0.002888  |  accuracy :  98.030%  |
+=========================== Epoch 18 ===========================
+|  Training    |  loss-avg : 0.000423  |  accuracy :  99.450%  |
+|  Validation  |  loss-avg : 0.002764  |  accuracy :  98.180%  |
+=========================== Epoch 19 ===========================
+|  Training    |  loss-avg : 0.000406  |  accuracy :  99.470%  |
+|  Validation  |  loss-avg : 0.002686  |  accuracy :  98.230%  |
+=========================== Epoch 20 ===========================
+|  Training    |  loss-avg : 0.000390  |  accuracy :  99.477%  |
+|  Validation  |  loss-avg : 0.002339  |  accuracy :  98.380%  |
+=========================== Epoch 21 ===========================
+|  Training    |  loss-avg : 0.000376  |  accuracy :  99.491%  |
+|  Validation  |  loss-avg : 0.002884  |  accuracy :  97.960%  |
+=========================== Epoch 22 ===========================
+{'--batch_size': '32',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'albert-base-v2'}

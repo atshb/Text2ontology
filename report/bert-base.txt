@@ -1,0 +1,30 @@
+{'--batch_size': '32',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '20',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'bert-base-uncased'}
+=========================== Epoch 01 ===========================
+|  Training    |  loss-avg : 0.013011  |  accuracy :  84.025%  |
+|  Validation  |  loss-avg : 0.008008  |  accuracy :  90.659%  |
+=========================== Epoch 02 ===========================
+|  Training    |  loss-avg : 0.006831  |  accuracy :  92.013%  |
+|  Validation  |  loss-avg : 0.005566  |  accuracy :  93.649%  |
+=========================== Epoch 03 ===========================
+|  Training    |  loss-avg : 0.004246  |  accuracy :  95.154%  |
+|  Validation  |  loss-avg : 0.003943  |  accuracy :  95.580%  |
+=========================== Epoch 04 ===========================
+|  Training    |  loss-avg : 0.002810  |  accuracy :  96.813%  |
+|  Validation  |  loss-avg : 0.003836  |  accuracy :  96.070%  |
+=========================== Epoch 05 ===========================
+|  Training    |  loss-avg : 0.002012  |  accuracy :  97.744%  |
+|  Validation  |  loss-avg : 0.003140  |  accuracy :  97.020%  |
+=========================== Epoch 06 ===========================
+|  Training    |  loss-avg : 0.001522  |  accuracy :  98.289%  |
+|  Validation  |  loss-avg : 0.002775  |  accuracy :  97.440%  |
+=========================== Epoch 07 ===========================
+|  Training    |  loss-avg : 0.001219  |  accuracy :  98.634%  |
+|  Validation  |  loss-avg : 0.002921  |  accuracy :  97.680%  |
+=========================== Epoch 08 ===========================

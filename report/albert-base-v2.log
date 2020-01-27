@@ -1,0 +1,44 @@
+{'--batch_size': '32',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'albert-base-v2'}
+=========================== Epoch 01 ===========================
+{'--batch_size': '128',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'albert-base-v2'}
+=========================== Epoch 01 ===========================
+{'--batch_size': '64',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'albert-base-v2'}
+=========================== Epoch 01 ===========================
+{'--batch_size': '64',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'albert-base-v1'}
+=========================== Epoch 01 ===========================
+{'--batch_size': '64',
+ '--help': False,
+ '--lr': '1e-5',
+ '--max_epoch': '30',
+ '--num_train': '-1',
+ '--num_valid': '-1',
+ '--seq_len': '50',
+ '<pretrained_weights>': 'albert-base-v1'}

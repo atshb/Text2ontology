@@ -147,7 +147,8 @@ def main():
     os.makedirs(model_dir, exist_ok=True)
 
     # 学習ログの記録（TensorBoard）
-    writer = SummaryWriter(log_dir=log_dir)
+    train_writer = SummaryWriter(log_dir=f'{log_dir}/train')
+    valid_writer = SummaryWriter(log_dir=f'{log_dir}/valid')
 
     # 学習
     for epoch in range(1, max_epoch+1):
@@ -156,14 +157,14 @@ def main():
         # Training
         loss, accu = train_model(model, optimizer, train_loader, device)
         print(f'|  Training    |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
-        writer.add_scalar('train/loss', loss, epoch)
-        writer.add_scalar('train/accu', accu, epoch)
+        train_writer.add_scalar('loss', loss, epoch)
+        train_writer.add_scalar('accu', accu, epoch)
 
         # Validation
         loss, accu = valid_model(model, optimizer, valid_loader, device)
         print(f'|  Validation  |  loss-avg : {loss:>8.6f}  |  accuracy : {accu:>8.3%}  |')
-        writer.add_scalar('valid/loss', loss, epoch)
-        writer.add_scalar('valid/accu', accu, epoch)
+        valid_writer.add_scalar('loss', loss, epoch)
+        valid_writer.add_scalar('accu', accu, epoch)
 
         # モデルの保存
         torch.save(model.state_dict(), f'{model_dir}/epoch-{epoch:0>2}.pkl')

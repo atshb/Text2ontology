@@ -69,12 +69,3 @@
 =========================== Epoch 21 ===========================
 |  Training    |  loss-avg : 0.000376  |  accuracy :  99.491%  |
 |  Validation  |  loss-avg : 0.002884  |  accuracy :  97.960%  |
-=========================== Epoch 22 ===========================
-{'--batch_size': '32',
- '--help': False,
- '--lr': '1e-5',
- '--max_epoch': '30',
- '--num_train': '-1',
- '--num_valid': '-1',
- '--seq_len': '50',
- '<pretrained_weights>': 'albert-base-v2'}

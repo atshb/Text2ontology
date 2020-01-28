@@ -169,7 +169,8 @@ def main():
         # モデルの保存
         torch.save(model.state_dict(), f'{model_dir}/epoch-{epoch:0>2}.pkl')
 
-    write.close()
+    train_writer.close()
+    valid_writer.close()
 
 
 if __name__ == '__main__': main()

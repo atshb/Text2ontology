@@ -2,3 +2,4 @@ notebook/.ipynb_checkpoints/
 result/
 data/
 models/
+src/__pycache__

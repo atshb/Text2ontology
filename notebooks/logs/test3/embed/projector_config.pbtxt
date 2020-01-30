@@ -1,0 +1,24 @@
+embeddings {
+tensor_name: "1:00000"
+tensor_path: "00000/1/tensors.tsv"
+metadata_path: "00000/1/metadata.tsv"
+sprite {
+image_path: "00000/1/sprite.png"
+single_image_dim: 32
+single_image_dim: 10
+}
+}
+embeddings {
+tensor_name: "2:00000"
+tensor_path: "00000/2/tensors.tsv"
+sprite {
+image_path: "00000/2/sprite.png"
+single_image_dim: 32
+single_image_dim: 10
+}
+}
+embeddings {
+tensor_name: "3:00000"
+tensor_path: "00000/3/tensors.tsv"
+metadata_path: "00000/3/metadata.tsv"
+}

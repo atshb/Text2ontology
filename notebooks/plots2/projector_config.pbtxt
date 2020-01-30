@@ -1,0 +1,10 @@
+embeddings {
+tensor_name: "I sit in bank:00000"
+tensor_path: "00000/I sit in bank/tensors.tsv"
+metadata_path: "00000/I sit in bank/metadata.tsv"
+}
+embeddings {
+tensor_name: "Borrowed money at the bank:00000"
+tensor_path: "00000/Borrowed money at the bank/tensors.tsv"
+metadata_path: "00000/Borrowed money at the bank/metadata.tsv"
+}

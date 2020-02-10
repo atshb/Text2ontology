@@ -2,8 +2,8 @@
 Train model for classification of relationship between Compound words
 
 Usage:
-    train_bert_emb_rnn.py (-h | --help)
-    train_bert_emb_rnn.py [--dir_name=<dn>]
+    train_bert-emb_rnn.py (-h | --help)
+    train_bert-emb_rnn.py [--dir_name=<dn>]
                           [--lr=<lr>]
                           [--seq_len=<sl>]
                           [--max_epoch=<me>]
@@ -13,8 +13,8 @@ Usage:
 
 Options:
     -h --help          show this help message and exit.
-    --dir_name=<dn>    Destination directory name. [default: rnn]
-    --lr=<lr>          leaning rate of optimizer.  [default: 1e-5]
+    --dir_name=<dn>    Destination directory name. [default: bert-emb]
+    --lr=<lr>          leaning rate of optimizer.  [default: 1e-3]
     --seq_len=<sl>     maximum sequence length.    [default: 30]
     --max_epoch=<me>   maximum training epoch.     [default: 30]
     --batch_size=<bs>  size of mini-batch.         [default: 32]
@@ -38,6 +38,7 @@ from models_rnn import *
 '''
 def train_model(model, embed, loss_func, optimizer, dataloader, device):
     model.train()
+    embed.train()
 
     epoch_loss = 0
     epoch_accu = 0
@@ -69,6 +70,7 @@ def train_model(model, embed, loss_func, optimizer, dataloader, device):
 '''
 def valid_model(model, embed, loss_func, optimizer, dataloader, device):
     model.eval()
+    embed.eval()
 
     epoch_loss = 0
     epoch_accu = 0
@@ -114,7 +116,7 @@ def main():
     weights = 'bert-base-uncased'
     tokenizer = BertTokenizer.from_pretrained(weights)
     bert_emb = BertModel.from_pretrained(weights).get_input_embeddings()
-    bert_emb.to(device).eval()
+    bert_emb.to(device)
 
     # 学習モデル
     model = TwinRnnClassifier(768).to(device)

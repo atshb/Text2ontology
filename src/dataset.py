@@ -58,6 +58,28 @@ class Word2vecEmbedding():
 
 
 '''
+SepPhraseEncoder
+    BERTに二つの文を単一入力として渡すための transform クラス。
+    各文は Byte Pair Encoding(BPE) によりサブワードに分割され、さらにIDに変換される。
+    また、二つの文を区別するため、トークンタイプ行列とセットで出力。
+'''
+class SepPhraseEncoder():
+
+    def __init__(self, tokenizer, seq_len=30):
+        self.seq_len = seq_len
+        self.tokenizer = tokenizer
+
+    def __call__(self, x):
+        return self.encode_phrase(x[0]), self.encode_phrase(x[1])
+
+    def encode_phrase(self, phrase):
+        tokens = self.tokenizer.tokenize(phrase)
+        tokens = self.tokenizer.convert_tokens_to_ids(tokens)
+        tokens = tokens + [0] * (self.seq_len - len(tokens))
+        return torch.LongTensor(tokens)
+
+
+'''
 TwinPhraseEncoder
     BERTに二つの文を単一入力として渡すための transform クラス。
     各文は Byte Pair Encoding(BPE) によりサブワードに分割され、さらにIDに変換される。
@@ -70,7 +92,6 @@ class TwinPhraseEncoder():
         self.tokenizer = tokenizer
 
     def __call__(self, x):
-        '''
         # BPEでトークンに分割
         a = self.tokenizer.tokenize('[CLS]' + x[0] + '[SEP]')
         b = self.tokenizer.tokenize(          x[1] + '[SEP]')
@@ -94,6 +115,7 @@ class TwinPhraseEncoder():
         ttypes += [0] * (self.seq_len - len(ttypes))
 
         return torch.LongTensor(tokens), torch.LongTensor(ttypes)
+        '''
 
 
 

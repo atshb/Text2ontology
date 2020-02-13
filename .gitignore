@@ -2,4 +2,5 @@ notebook/.ipynb_checkpoints/
 result/
 data/
 models/
+reports/
 src/__pycache__
